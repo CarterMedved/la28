@@ -1,0 +1,162 @@
+
+======================================================================
+ERROR — 14
+======================================================================
+
+  [referential/cuts-leads_to]
+    Cut_Lines · fiba-m-fopqt-7
+      leads_to "FOPQT 2027" is not a competition_id or olympic_event_id — it looks like a display label. Replace it with the id of the competition or event this cut-line feeds.
+
+  [state/complete-but-future]
+    Competitions · 2026-fiba-women-s-basketball-world-cup
+      status COMPLETE but end_date 2026-09-13 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates.
+    Competitions · 2026-fiba-women-s-olympic-pre-qualifying-tournament
+      status COMPLETE but end_date 2026-08-23 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates.
+    Competitions · fiba-women-s-americup-2027-south-american-qualifier
+      status COMPLETE but end_date 2026-08-06 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates.
+
+  [state/in-progress-not-started]
+    Competitions · 2027-fiba-basketball-world-cup-qualification-africa
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · 2027-fiba-basketball-world-cup-qualification-americas
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · 2027-fiba-basketball-world-cup-qualification-asia
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · 2027-fiba-basketball-world-cup-qualification-europe
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · eurobasket-women-2027-qualification
+      status IN_PROGRESS but start_date 2026-11-01 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · fiba-eurobasket-2029-pre-qualifiers-second-round
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · fiba-women-s-afrobasket-2027-qualifiers
+      status IN_PROGRESS but start_date 2026-11-01 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+
+  [state/confirmed-placeholder-dates]
+    Competitions · caf-w-oqt-2028-r1
+      date_confidence is CONFIRMED but the dates look like placeholders: start_date 2026-06-01 is a first-of-month date and no real fixture falls inside the window. Set date_confidence to TBD or APPROXIMATE, or replace the dates with the real schedule.
+    Competitions · eurobasket-women-2027-qualification
+      date_confidence is CONFIRMED but the dates look like placeholders: start_date 2026-11-01 is a first-of-month date and no real fixture falls inside the window (its only fixtures are placeholders or fall outside it). Set date_confidence to TBD or APPROXIMATE, or replace the dates with the real schedule.
+    Competitions · fiba-women-s-afrobasket-2027-qualifiers
+      date_confidence is CONFIRMED but the dates look like placeholders: start_date 2026-11-01 is a first-of-month date and no real fixture falls inside the window (its only fixtures are placeholders or fall outside it). Set date_confidence to TBD or APPROXIMATE, or replace the dates with the real schedule.
+
+======================================================================
+WARN — 43
+======================================================================
+
+  [coverage/cut-line-unlocatable]
+    Cut_Lines · fiba-m-fopqt-7
+      threshold for "Seven FOPQT places on ranking" (TOP_N_OF_POOL) cannot be located: its ranking has zero standings rows captured. Extend the Standings capture for fiba-mens-world-ranking to unblock it.
+
+  [coverage/cut-line-zero-headroom]
+    Cut_Lines · icc-m-host-top15
+      threshold for "Host place test — rank 15 or better" resolves at rank 15 — exactly the captured depth of icc-mens-t20i-team-ranking. Zero headroom: the next standings refresh that moves the edge team down will make this cut unlocatable. Capture more rows now.
+
+  [coverage/past-fixtures-no-result]
+    Fixtures · (aggregate)
+      47 of 63 past fixtures have no result recorded (75%). Backfill results or the app shows played games as pending.
+
+  [coverage/unlinked-competition]
+    Competitions · 2026-baseball-european-championship-b-pool-group-bulgaria
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-baseball-european-championship-b-pool-group-poland
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-central-american-and-caribbean-games-men-s-field-hockey
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-central-american-and-caribbean-games-women
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-fiba-3x3-women-s-series-tokyo-stop
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-fivb-men-s-volleyball-nations-league
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-ifaf-men-s-flag-football-world-championship
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-uec-mountain-bike-european-championships-xco
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-wbsc-premier12
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-wbsc-premier12-qualification
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-women-s-softball-european-championship
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-women-s-softball-world-cup
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+
+  [coverage/fixtures-before-start]
+    Competitions · 2026-concacaf-u-20-championship
+      earliest fixture is 2026-07-24 but start_date is 2026-07-25. start_date must be the competition's true start; fix it or the fixture date.
+    Competitions · 2028-fiba-men-s-olympic-qualifying-tournaments
+      earliest fixture is 2027-06-26 but start_date is 2028-06-26. start_date must be the competition's true start; fix it or the fixture date.
+
+  [coverage/missing-earlier-rounds]
+    Competitions · 2027-fiba-basketball-world-cup-qualification-africa
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-europe
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-asia
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · fiba-eurobasket-2029-pre-qualifiers-second-round
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-americas
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+
+  [coverage/placeholder-fixtures]
+    Fixtures · 2026-ifaf-men-s-flag-football-world-championship
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0085). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · cricket-at-the-2026-asian-games-men-s-tournament
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0226). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · fiba-women-s-afrobasket-2027-qualifiers
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0238). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · eurobasket-women-2027-qualification
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0239). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · eurobasket-women-2027
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0379). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2028-fiba-men-s-olympic-qualifying-tournaments
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0380). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2027-fiba-women-s-americup
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0381). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2027-fiba-women-s-asia-cup
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0382). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2027-women-s-softball-european-championship
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0383). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · two-fiba-olympic-pre-qualifying-tournaments-2027-for-europe
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0384). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · fiba-olympic-pre-qualifying-tournament-2027-for-africa
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0385). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · fiba-olympic-pre-qualifying-tournament-2027-for-asia
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0386). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · fiba-olympic-pre-qualifying-tournament-2027-for-americas
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0387). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2027-fiba-basketball-world-cup
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0388). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2027-wbsc-premier12
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0389). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+    Fixtures · 2028-fiba-women-s-olympic-qualifying-tournaments
+      1 placeholder fixture(s) with stage "Not yet drawn" (fx-0390). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result.
+
+  [coverage/round-robin-incomplete]
+    Competitions · 2026-baseball-european-championship-b-pool-group-bulgaria
+      single round-robin group of 5 where 5 team(s) do not meet every groupmate (e.g. Romania: 2 of 4 opponents) — fixtures are missing.
+    Competitions · 2026-baseball-european-championship-b-pool-group-poland
+      single round-robin group of 6 where 6 team(s) do not meet every groupmate (e.g. Norway: 2 of 5 opponents) — fixtures are missing.
+    Competitions · 2026-central-american-and-caribbean-games-women
+      single round-robin group of 6 where 6 team(s) do not meet every groupmate (e.g. Cuba: 2 of 5 opponents) — fixtures are missing.
+    Competitions · 2026-fiba-3x3-women-s-series-tokyo-stop
+      format declares 18 teams but 16 appear in group-stage fixtures.
+    Competitions · 2026-fivb-men-s-volleyball-nations-league
+      single round-robin group of 3 where 2 team(s) do not meet every groupmate (e.g. Italy: 1 of 2 opponents) — fixtures are missing. single round-robin group of 3 where 2 team(s) do not meet every groupmate (e.g. Ukraine: 1 of 2 opponents) — fixtures are missing.
+
+======================================================================
+INFO — 1
+======================================================================
+
+  [state/tie]
+    Standings · icc-womens-t20i-team-ranking#rank72
+      8 teams tied at rank 72 on rating 0 (Singapore, Eswatini, Saudi Arabia, Luxembourg, Cook Islands, Bulgaria, Belgium, Bahrain). Away from every cut-line; no action needed.
+
+----------------------------------------------------------------------
+SUMMARY  (reference date 2026-08-02)
+  ERROR 14 · WARN 43 · INFO 1
+  coverage: 19 events · 146 links · 81 competitions · 390 fixtures (16 results recorded, 63 past) · 2 rankings with standings, 7 without · 8 cut-lines · 94 standings rows
+  report written to report.json
+
+NOT FIT TO PUBLISH — 14 error(s) must be fixed.

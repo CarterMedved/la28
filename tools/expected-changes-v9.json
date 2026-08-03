@@ -1,0 +1,100 @@
+{
+ "expected": [
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "end_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "format",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "location",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "south-africa-women-s-cricket-team-in-zimbabwe-in-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 94)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 95)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 96)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 97)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 99)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 100)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 101)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 102)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 103)",
+   "col": null,
+   "kind": "row-add"
+  }
+ ]
+}

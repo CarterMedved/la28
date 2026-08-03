@@ -1,0 +1,46 @@
+
+======================================================================
+WARN — 7
+======================================================================
+
+  [coverage/cut-line-zero-headroom]
+    Cut_Lines · icc-m-host-top15
+      threshold for "Host place test — rank 15 or better" resolves at rank 15 — exactly the captured depth of icc-mens-t20i-team-ranking. Zero headroom: the next standings refresh that moves the edge team down will make this cut unlocatable. Capture more rows now.
+
+  [coverage/past-fixtures-no-result]
+    Fixtures · (aggregate)
+      2 of 22 past fixtures have no result recorded (9%). Missing:
+      fx-0026 · pakistan-women-s-cricket-team-in-sri-lanka-in-2026 · 2026-07-31 · Sri Lanka Women v Pakistan Women
+      fx-0062 · 2026-concacaf-u-20-championship · 2026-08-01 · Canada U-20 v Jamaica U-20
+
+  [coverage/missing-earlier-rounds]
+    Competitions · 2027-fiba-basketball-world-cup-qualification-africa
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-europe
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-asia
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · fiba-eurobasket-2029-pre-qualifiers-second-round
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-americas
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+
+======================================================================
+INFO — 2
+======================================================================
+
+  [state/tie]
+    Standings · icc-womens-t20i-team-ranking#rank72
+      8 teams tied at rank 72 on rating 0 (Singapore, Eswatini, Saudi Arabia, Luxembourg, Cook Islands, Bulgaria, Belgium, Bahrain). Away from every cut-line; no action needed.
+
+  [coverage/pool-preview]
+    Cut_Lines · fiba-m-fopqt-7
+      TOP_N_OF_POOL pool derivation preview — second-round participants per feeding competition: 2027-fiba-basketball-world-cup-qualification-africa: 12; 2027-fiba-basketball-world-cup-qualification-europe: 24; 2027-fiba-basketball-world-cup-qualification-asia: 12; fiba-eurobasket-2029-pre-qualifiers-second-round: 12; 2027-fiba-basketball-world-cup-qualification-americas: 12. 60 distinct second-round teams advance toward 2027-fiba-basketball-world-cup (32-team field) → 28 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-africa (6-team field) → 6 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-americas (6-team field) → 6 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-asia (6-team field) → 6 of them miss it. The pool for this cut is teams NOT in those second rounds; membership resolves once standings for fiba-mens-world-ranking are captured.
+
+----------------------------------------------------------------------
+SUMMARY  (reference date 2026-08-02)
+  ERROR 0 · WARN 7 · INFO 2
+  coverage: 19 events · 151 links · 74 competitions · 313 fixtures (24 results recorded, 22 past) · 3 rankings with standings, 6 without · 8 cut-lines · 194 standings rows · 7 settled berths in Qualified
+  report written to report-v13.json
+
+FIT TO PUBLISH — no errors.

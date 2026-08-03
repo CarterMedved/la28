@@ -1,0 +1,59 @@
+# Stage-four step 3 skeleton (docs/stage-four.md). Secrets, and only these:
+#   LA28_SA_KEY         — Google service-account key JSON. The account holds NO
+#                         IAM roles; the workbook sheet is shared to it as
+#                         Viewer and the token is scoped drive.readonly, so it
+#                         can read exactly the files shared with it and write
+#                         nothing. Revocation => the pull step fails, the chain
+#                         stops, the last published artefact keeps serving.
+#   LA28_SPREADSHEET_ID — pinned sheet id (config, not sensitive).
+# GITHUB_TOKEN is the per-run ephemeral token, restricted by the permissions
+# block below (read code, deploy pages). No PAT anywhere.
+name: publish
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      # Baseline state (last-published workbook + meta) carried between runs.
+      - uses: actions/cache@v4
+        with:
+          path: .ci-state
+          key: ci-state-${{ github.run_id }}
+          restore-keys: ci-state-
+      - name: pull workbook (fails closed; publishes nothing on any error)
+        env:
+          LA28_SA_KEY: ${{ secrets.LA28_SA_KEY }}
+          LA28_SPREADSHEET_ID: ${{ secrets.LA28_SPREADSHEET_ID }}
+        run: node tools/pull-workbook.mjs --out .ci-state/pulled.xlsx
+      - name: gate → validator → emit → round-trip → atomic publish
+        run: node tools/ci-publish.mjs --workbook .ci-state/pulled.xlsx --site site
+      # Every run's full report and pulled bytes are archived as CI artefacts,
+      # pass or fail (§2: pulled bytes hashed and archived per run).
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-${{ github.run_id }}
+          path: |
+            .ci-state/run-report.json
+            .ci-state/gate-report.json
+            .ci-state/pulled.xlsx
+          if-no-files-found: ignore
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4

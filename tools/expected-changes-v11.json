@@ -1,0 +1,316 @@
+{
+ "expected": [
+  {
+   "sheet": "Fixtures",
+   "key": "(header)",
+   "col": "notes",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "(header)",
+   "col": "date_confidence",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-womens-asian-cup-2026",
+   "col": "location",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0397",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0397",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0397",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0397",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0397",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0398",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0398",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0398",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0398",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0398",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0399",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0399",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0399",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0399",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0399",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0400",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0400",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0400",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0400",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0400",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0401",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0402",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0403",
+   "col": "date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0403",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0403",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-w-oqt-2028",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-w-oqt-2028",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0393",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0393",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0394",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0394",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0395",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0395",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0396",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0396",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "caf-w-oqt-2028-r1",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "caf-w-oqt-2028-r2",
+   "col": "notes",
+   "kind": "cell"
+  }
+ ]
+}

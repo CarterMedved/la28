@@ -1,0 +1,316 @@
+{
+ "expected": [
+  {
+   "sheet": "Competitions",
+   "key": "pakistan-women-s-cricket-team-in-sri-lanka-in-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-concacaf-u-20-championship",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "end_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "location",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "format",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-women-s-tournament",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "south-africa-women-s-cricket-team-in-zimbabwe-in-2026",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "south-africa-women-s-cricket-team-in-zimbabwe-in-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "icc-womens-emerging-nations-trophy-2026",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-27-womens-associate-t20i-series",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "cri-022",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "cri-023",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0063",
+   "col": "result",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0072",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0072",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0072",
+   "col": "date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0072",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0071",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0071",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0071",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0078",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0078",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0078",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0077",
+   "col": "team1",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0077",
+   "col": "team2",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0077",
+   "col": "date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0077",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0393",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0394",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0395",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0396",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0397",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0398",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0399",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0400",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0401",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0402",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0403",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "(header)",
+   "col": "continents",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "icc-m-continental-4",
+   "col": "continents",
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 85)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 86)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 87)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 89)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 90)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 91)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 92)",
+   "col": null,
+   "kind": "row-add"
+  }
+ ]
+}

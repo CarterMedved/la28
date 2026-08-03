@@ -1,0 +1,142 @@
+{
+ "expected": [
+  {
+   "sheet": "Links",
+   "key": "fbl-005",
+   "col": "criterion",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "fbl-005",
+   "col": "berth_math",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "fbl-005",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "fbl-005",
+   "col": "source_ref",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0077",
+   "col": "date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0077",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "concacaf-u20-2026-qualification",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "concacaf-u20-2026-qualification",
+   "col": "end_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "concacaf-u20-2026-qualification",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "concacaf-u20-2026-qualification",
+   "col": "format",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "concacaf-u20-2026-qualification",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fwbwc-qualifying-tournaments-2026",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fwbwc-qualifying-tournaments-2026",
+   "col": "end_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fwbwc-qualifying-tournaments-2026",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fwbwc-qualifying-tournaments-2026",
+   "col": "format",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fwbwc-qualifying-tournaments-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+   "col": "status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 105)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 106)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 107)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 108)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 109)",
+   "col": null,
+   "kind": "row-add"
+  }
+ ]
+}

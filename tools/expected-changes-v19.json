@@ -1,0 +1,34 @@
+{
+ "expected": [
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup",
+   "col": "teams_count",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-olympic-pre-qualifying-tournament-2027-for-africa",
+   "col": "teams_count",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-olympic-pre-qualifying-tournament-2027-for-americas",
+   "col": "teams_count",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-olympic-pre-qualifying-tournament-2027-for-asia",
+   "col": "teams_count",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "two-fiba-olympic-pre-qualifying-tournaments-2027-for-europe",
+   "col": "teams_count",
+   "kind": "cell"
+  }
+ ]
+}

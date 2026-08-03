@@ -1,0 +1,76 @@
+{
+ "expected": [
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-africa",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "two-fiba-olympic-pre-qualifying-tournaments-2027-for-europe",
+   "col": "format",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "two-fiba-olympic-pre-qualifying-tournaments-2027-for-europe",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-013",
+   "col": "eligibility_note",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-016",
+   "col": "eligibility_note",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-019",
+   "col": "eligibility_note",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "fiba-m-fopqt-7",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 99)",
+   "col": null,
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 100)",
+   "col": null,
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 101)",
+   "col": null,
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 102)",
+   "col": null,
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 103)",
+   "col": null,
+   "kind": "cell"
+  }
+ ]
+}

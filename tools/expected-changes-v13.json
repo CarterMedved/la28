@@ -1,0 +1,688 @@
+{
+ "expected": [
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|USA",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Germany",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Serbia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|France",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Canada",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Spain",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Australia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Argentina",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Brazil",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Lithuania",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Türkiye",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Latvia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Greece",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Slovenia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Italy",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Puerto Rico",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Finland",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Montenegro",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Poland",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Georgia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Dominican Rep",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Japan",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Czechia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|South Sudan",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|New Zealand",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Iran",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Venezuela",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Mexico",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Israel",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|China",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Lebanon",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Angola",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Bosnia and Herz.",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Croatia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Belgium",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Estonia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Cote d'Ivoire",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Ukraine",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Philippines",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Sweden",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Jordan",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Uruguay",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Egypt",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Iceland",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Portugal",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Great Britain",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Hungary",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Senegal",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Bahamas",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Cape Verde",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Tunisia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Netherlands",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Nigeria",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Colombia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Bulgaria",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Panama",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Korea",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Cameroon",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Denmark",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Chile",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Switzerland",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Romania",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Mali",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|North Macedonia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Saudi Arabia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Austria",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Cuba",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Chinese Taipei",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Cyprus",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Slovakia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Guinea",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Congo DR",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Nicaragua",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Syria",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|India",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Qatar",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Guam",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Jamaica",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Uganda",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Bahrain",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Iraq",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Rwanda",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Ireland",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Norway",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Costa Rica",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Kazakhstan",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Luxembourg",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Kosovo",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Libya",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Madagascar",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Virgin Islands",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Armenia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Paraguay",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Indonesia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Albania",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Andorra",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Thailand",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Central African Rep",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Azerbaijan",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "fiba-mens-world-ranking|Malta",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Ranking_Systems",
+   "key": "fiba-mens-world-ranking",
+   "col": "standings_url",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Ranking_Systems",
+   "key": "fiba-mens-world-ranking",
+   "col": "feeds_id",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Ranking_Systems",
+   "key": "fiba-mens-world-ranking",
+   "col": "points_notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-olympic-pre-qualifying-tournaments-2027",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-014",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-017",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-020",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-023",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-041",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-042",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-043",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-044",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-045",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "fiba-m-fopqt-7",
+   "col": "leads_to",
+   "kind": "cell"
+  }
+ ]
+}

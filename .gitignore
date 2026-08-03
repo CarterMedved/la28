@@ -1,0 +1,31 @@
+# dependencies & build output
+node_modules/
+test/.build/
+test/mutants/
+
+# CI-produced state and published artefacts (never source; the branch/site
+# carry them in production, nothing local should)
+.ci-state/
+site/
+
+# harness by-products: validator reports written next to mutant/versioned
+# workbooks by runValidator (path.xlsx -> path.report.json), ignored
+# WHEREVER they land. The curated records are the root final-run*.txt /
+# report-*.json (hyphen, different name shape), which ARE committed.
+*.report.json
+
+# credentials — none exist yet; excluded before they can (stage-four §2:
+# the service-account key must never live in the tree)
+*.pem
+*.key
+*.p12
+*service-account*.json
+*credentials*.json
+sa-key*.json
+.env
+.env.*
+secrets/
+**/secrets/
+
+# OS noise
+.DS_Store

@@ -1,0 +1,4 @@
+{
+  "_readme": "Acknowledgments for gated workbook changes (docs/stage-four.md §2). Append-only, no expiry. Each entry: {digest, note, date}. The digest covers sheet·key·col·kind + OLD value + new value of every gated change in the pull — the failing CI run prints the digest and the enumerated changes to acknowledge.",
+  "acks": []
+}

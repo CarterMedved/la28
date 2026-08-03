@@ -1,0 +1,22 @@
+{
+ "expected": [
+  {
+   "sheet": "Ranking_Systems",
+   "key": "(header)",
+   "col": "next_refresh_expected",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Ranking_Systems",
+   "key": "fiba-mens-world-ranking",
+   "col": "next_refresh_expected",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Ranking_Systems",
+   "key": "fiba-mens-world-ranking",
+   "col": "decay_notes",
+   "kind": "cell"
+  }
+ ]
+}

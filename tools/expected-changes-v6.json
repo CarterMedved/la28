@@ -1,0 +1,154 @@
+{
+ "expected": [
+  {
+   "sheet": "Qualified",
+   "key": "(header)",
+   "col": "hold_status",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-football-w#Brazil",
+   "col": "hold_status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-football-w#Colombia",
+   "col": "hold_status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Australia",
+   "col": "hold_status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Great Britain",
+   "col": "hold_status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#India",
+   "col": "hold_status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#South Africa",
+   "col": "hold_status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Australia",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Australia",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Great Britain",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Great Britain",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#India",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#India",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#South Africa",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#South Africa",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#New Zealand",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|New Zealand",
+   "col": "qualified_via",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|New Zealand",
+   "col": "provisional",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "cri-006",
+   "col": "confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "cri-006",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 79)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 80)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 81)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 82)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 83)",
+   "col": null,
+   "kind": "row-add"
+  }
+ ]
+}

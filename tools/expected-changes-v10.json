@@ -1,0 +1,64 @@
+{
+ "expected": [
+  {
+   "sheet": "Cut_Lines",
+   "key": "icc-m-host-top15",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "sri-lankan-cricket-team-in-england-in-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "indian-cricket-team-in-bangladesh-in-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "west-indian-cricket-team-in-india-in-202627",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "bangladeshi-cricket-team-in-south-africa-in-202627",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "cricket-at-the-2026-asian-games-men-s-tournament",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2028-t20-world-cup-regional-finals-m",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-27-mens-associate-t20i-series",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "cri-024",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Links",
+   "key": "cri-025",
+   "col": null,
+   "kind": "row-add"
+  }
+ ]
+}

@@ -1,0 +1,504 @@
+{
+ "expected": [
+  {
+   "sheet": "Competitions",
+   "key": "2026-fiba-women-s-basketball-world-cup",
+   "col": "status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-fiba-women-s-olympic-pre-qualifying-tournament",
+   "col": "status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-women-s-americup-2027-south-american-qualifier",
+   "col": "status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-africa",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-africa",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-americas",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-americas",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-asia",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-asia",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-europe",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-fiba-basketball-world-cup-qualification-europe",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "eurobasket-women-2027-qualification",
+   "col": "status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "eurobasket-women-2027-qualification",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-women-s-afrobasket-2027-qualifiers",
+   "col": "status",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-women-s-afrobasket-2027-qualifiers",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0390",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0389",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0388",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0387",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0386",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0385",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0384",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0383",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0382",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0381",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0380",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0379",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0239",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0238",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0226",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0085",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-concacaf-u-20-championship",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-womens-asian-cup-2026",
+   "col": "start_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-womens-asian-cup-2026",
+   "col": "end_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-womens-asian-cup-2026",
+   "col": "date_confidence",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-womens-asian-cup-2026",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "afc-w-oqt-2028",
+   "col": "end_date",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "caf-w-oqt-2028-r2",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "(header)",
+   "col": "represents_noc",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-mens-t20i-team-ranking|England",
+   "col": "represents_noc",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|England",
+   "col": "represents_noc",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "(tab)",
+   "col": null,
+   "kind": "tab-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-football-w#Brazil",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-football-w#Colombia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Australia",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#Great Britain",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#India",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#South Africa",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|Australia",
+   "col": "already_qualified",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|Australia",
+   "col": "qualified_via",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|England",
+   "col": "already_qualified",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|England",
+   "col": "qualified_via",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|India",
+   "col": "already_qualified",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|India",
+   "col": "qualified_via",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|South Africa",
+   "col": "already_qualified",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Standings",
+   "key": "icc-womens-t20i-team-ranking|South Africa",
+   "col": "qualified_via",
+   "kind": "cell"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 58)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 59)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 60)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 61)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 62)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 63)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 65)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 66)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 67)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 68)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 69)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 70)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 72)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 73)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 74)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 75)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 76)",
+   "col": null,
+   "kind": "row-add"
+  },
+  {
+   "sheet": "README",
+   "key": "(line 77)",
+   "col": null,
+   "kind": "row-add"
+  }
+ ],
+ "qRows": [
+  [
+   "la28-football-w",
+   "Brazil",
+   "copa-america-femenina-2025",
+   "2025-08-02",
+   "CONFIRMED",
+   null
+  ],
+  [
+   "la28-football-w",
+   "Colombia",
+   "copa-america-femenina-2025",
+   "2025-08-02",
+   "CONFIRMED",
+   null
+  ],
+  [
+   "la28-cricket-w",
+   "Australia",
+   "icc-womens-t20-world-cup-2026",
+   "2026-07-06",
+   "UNCONFIRMED",
+   "Carried from Standings: \"Direct place, Women’s T20 World Cup 2026 (verify)\""
+  ],
+  [
+   "la28-cricket-w",
+   "Great Britain",
+   "icc-womens-t20-world-cup-2026",
+   "2026-07-06",
+   "UNCONFIRMED",
+   "England's ICC results represent Great Britain; Scotland, Wales and NI cannot hold the quota place. Carried from Standings (England row): \"Direct place, Women’s T20 World Cup 2026 (verify)\""
+  ],
+  [
+   "la28-cricket-w",
+   "India",
+   "icc-womens-t20-world-cup-2026",
+   "2026-07-06",
+   "UNCONFIRMED",
+   "Carried from Standings: \"Direct place, Women’s T20 World Cup 2026 (verify)\""
+  ],
+  [
+   "la28-cricket-w",
+   "South Africa",
+   "icc-womens-t20-world-cup-2026",
+   "2026-07-06",
+   "UNCONFIRMED",
+   "Carried from Standings: \"Direct place, Women’s T20 World Cup 2026 (verify)\""
+  ]
+ ]
+}

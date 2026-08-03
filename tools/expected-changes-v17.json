@@ -1,0 +1,28 @@
+{
+ "expected": [
+  {
+   "sheet": "Cut_Lines",
+   "key": "(header)",
+   "col": "computability",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "fiba-m-fopqt-7",
+   "col": "computability",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "fiba-m-fopqt-7",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Ranking_Systems",
+   "key": "fiba-mens-world-ranking",
+   "col": "points_notes",
+   "kind": "cell"
+  }
+ ]
+}

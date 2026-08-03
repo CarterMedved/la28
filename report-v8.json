@@ -1,0 +1,165 @@
+{
+  "workbook": "data/LA28_Qualification_Database_v8.xlsx",
+  "reference_date": "2026-08-02",
+  "generated_by": "la28-validator",
+  "summary": {
+    "error": 6,
+    "warn": 9,
+    "info": 2,
+    "suppressed": 0
+  },
+  "stats": {
+    "reference_date": "2026-08-02",
+    "events": 19,
+    "links": 148,
+    "competitions": 71,
+    "fixtures": 313,
+    "results_recorded": 17,
+    "past_fixtures": 19,
+    "rankings_with_standings": 2,
+    "rankings_without_standings": 7,
+    "cut_lines": 8,
+    "standings_rows": 94,
+    "qualified_rows": 7
+  },
+  "findings": [
+    {
+      "key": "referential/cuts-leads_to/fiba-m-fopqt-7",
+      "severity": "ERROR",
+      "rule": "referential/cuts-leads_to",
+      "tab": "Cut_Lines",
+      "rowId": "fiba-m-fopqt-7",
+      "message": "leads_to \"FOPQT 2027\" is not a competition_id or olympic_event_id — it looks like a display label. Replace it with the id of the competition or event this cut-line feeds."
+    },
+    {
+      "key": "state/complete-missing-dates/concacaf-u20-2026-qualification",
+      "severity": "ERROR",
+      "rule": "state/complete-missing-dates",
+      "tab": "Competitions",
+      "rowId": "concacaf-u20-2026-qualification",
+      "message": "status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in."
+    },
+    {
+      "key": "state/complete-missing-dates/fwbwc-qualifying-tournaments-2026",
+      "severity": "ERROR",
+      "rule": "state/complete-missing-dates",
+      "tab": "Competitions",
+      "rowId": "fwbwc-qualifying-tournaments-2026",
+      "message": "status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in."
+    },
+    {
+      "key": "state/in-progress-not-started/fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "message": "status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/tie/icc-womens-t20i-team-ranking#rank72",
+      "severity": "INFO",
+      "rule": "state/tie",
+      "tab": "Standings",
+      "rowId": "icc-womens-t20i-team-ranking#rank72",
+      "message": "8 teams tied at rank 72 on rating 0 (Singapore, Eswatini, Saudi Arabia, Luxembourg, Cook Islands, Bulgaria, Belgium, Bahrain). Away from every cut-line; no action needed."
+    },
+    {
+      "key": "state/completed-without-outcome/afc-womens-asian-cup-2026",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "afc-womens-asian-cup-2026",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "state/completed-without-outcome/caf-w-oqt-2028-r1",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "caf-w-oqt-2028-r1",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "coverage/cut-line-unlocatable/fiba-m-fopqt-7",
+      "severity": "WARN",
+      "rule": "coverage/cut-line-unlocatable",
+      "tab": "Cut_Lines",
+      "rowId": "fiba-m-fopqt-7",
+      "message": "threshold for \"Seven FOPQT places on ranking\" (TOP_N_OF_POOL) cannot be located: its ranking has zero standings rows captured. Extend the Standings capture for fiba-mens-world-ranking to unblock it."
+    },
+    {
+      "key": "coverage/cut-line-zero-headroom/icc-m-host-top15",
+      "severity": "WARN",
+      "rule": "coverage/cut-line-zero-headroom",
+      "tab": "Cut_Lines",
+      "rowId": "icc-m-host-top15",
+      "message": "threshold for \"Host place test — rank 15 or better\" resolves at rank 15 — exactly the captured depth of icc-mens-t20i-team-ranking. Zero headroom: the next standings refresh that moves the edge team down will make this cut unlocatable. Capture more rows now."
+    },
+    {
+      "key": "coverage/past-fixtures-no-result/(aggregate)",
+      "severity": "WARN",
+      "rule": "coverage/past-fixtures-no-result",
+      "tab": "Fixtures",
+      "rowId": "(aggregate)",
+      "message": "2 of 19 past fixtures have no result recorded (11%). Missing:\n      fx-0026 · pakistan-women-s-cricket-team-in-sri-lanka-in-2026 · 2026-07-31 · Sri Lanka Women v Pakistan Women\n      fx-0062 · 2026-concacaf-u-20-championship · 2026-08-01 · Canada U-20 v Jamaica U-20"
+    },
+    {
+      "key": "coverage/fixtures-before-start/cricket-at-the-2026-asian-games-women-s-tournament",
+      "severity": "WARN",
+      "rule": "coverage/fixtures-before-start",
+      "tab": "Competitions",
+      "rowId": "cricket-at-the-2026-asian-games-women-s-tournament",
+      "message": "earliest fixture is 2026-09-16 but start_date is 2026-09-17. start_date must be the competition's true start; fix it or the fixture date."
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-africa",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-africa",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-europe",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-europe",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-asia",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-asia",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-americas",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-americas",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/pool-preview/fiba-m-fopqt-7",
+      "severity": "INFO",
+      "rule": "coverage/pool-preview",
+      "tab": "Cut_Lines",
+      "rowId": "fiba-m-fopqt-7",
+      "message": "TOP_N_OF_POOL pool derivation preview — second-round participants per feeding competition: 2027-fiba-basketball-world-cup-qualification-africa: 12; 2027-fiba-basketball-world-cup-qualification-europe: 24; 2027-fiba-basketball-world-cup-qualification-asia: 12; fiba-eurobasket-2029-pre-qualifiers-second-round: 12; 2027-fiba-basketball-world-cup-qualification-americas: 12. 60 distinct second-round teams advance toward 2027-fiba-basketball-world-cup (32-team field) → 28 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-africa (6-team field) → 6 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-americas (6-team field) → 6 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-asia (6-team field) → 6 of them miss it. The pool for this cut is teams NOT in those second rounds; membership resolves once standings for fiba-mens-world-ranking are captured."
+    }
+  ],
+  "suppressed": [],
+  "unused_suppressions": []
+}

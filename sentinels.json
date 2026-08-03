@@ -1,0 +1,6 @@
+{
+  "sentinels": [
+    { "id": "HOST_USA", "note": "Host-nation allocation — a berth source, not a competition. The app renders it as an ALLOC node." },
+    { "id": "TRIPARTITE", "note": "Tripartite Commission universality places (fen-058, two places into la28-fencing-flexible). Also an ALLOC node in the app." }
+  ]
+}

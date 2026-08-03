@@ -1,0 +1,100 @@
+
+======================================================================
+ERROR — 6
+======================================================================
+
+  [referential/cuts-leads_to]
+    Cut_Lines · fiba-m-fopqt-7
+      leads_to "FOPQT 2027" is not a competition_id or olympic_event_id — it looks like a display label. Replace it with the id of the competition or event this cut-line feeds.
+
+  [state/complete-missing-dates]
+    Competitions · concacaf-u20-2026-qualification
+      status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in.
+    Competitions · fwbwc-qualifying-tournaments-2026
+      status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in.
+
+  [state/in-progress-not-started]
+    Competitions · fiba-eurobasket-2029-pre-qualifiers-second-round
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+
+  [state/completed-without-outcome]
+    Competitions · afc-womens-asian-cup-2026
+      status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field.
+    Competitions · caf-w-oqt-2028-r1
+      status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field.
+
+======================================================================
+WARN — 19
+======================================================================
+
+  [coverage/cut-line-unlocatable]
+    Cut_Lines · fiba-m-fopqt-7
+      threshold for "Seven FOPQT places on ranking" (TOP_N_OF_POOL) cannot be located: its ranking has zero standings rows captured. Extend the Standings capture for fiba-mens-world-ranking to unblock it.
+
+  [coverage/cut-line-zero-headroom]
+    Cut_Lines · icc-m-host-top15
+      threshold for "Host place test — rank 15 or better" resolves at rank 15 — exactly the captured depth of icc-mens-t20i-team-ranking. Zero headroom: the next standings refresh that moves the edge team down will make this cut unlocatable. Capture more rows now.
+
+  [coverage/past-fixtures-no-result]
+    Fixtures · (aggregate)
+      2 of 19 past fixtures have no result recorded (11%). Missing:
+      fx-0026 · pakistan-women-s-cricket-team-in-sri-lanka-in-2026 · 2026-07-31 · Sri Lanka Women v Pakistan Women
+      fx-0062 · 2026-concacaf-u-20-championship · 2026-08-01 · Canada U-20 v Jamaica U-20
+
+  [coverage/missing-earlier-rounds]
+    Competitions · 2027-fiba-basketball-world-cup-qualification-africa
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-europe
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-asia
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · fiba-eurobasket-2029-pre-qualifiers-second-round
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+    Competitions · 2027-fiba-basketball-world-cup-qualification-americas
+      stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)
+
+  [hygiene/notes-essay]
+    Competitions · bangladeshi-cricket-team-in-south-africa-in-202627
+      notes is 3363 chars — that is a document, not a note. Move rules to the modelled columns, derived claims nowhere (the app computes them), and keep notes to sourcing and verification items.
+    Competitions · cricket-at-the-2026-asian-games-men-s-tournament
+      notes is 3363 chars — that is a document, not a note. Move rules to the modelled columns, derived claims nowhere (the app computes them), and keep notes to sourcing and verification items.
+    Competitions · indian-cricket-team-in-bangladesh-in-2026
+      notes is 3363 chars — that is a document, not a note. Move rules to the modelled columns, derived claims nowhere (the app computes them), and keep notes to sourcing and verification items.
+    Competitions · sri-lankan-cricket-team-in-england-in-2026
+      notes is 3363 chars — that is a document, not a note. Move rules to the modelled columns, derived claims nowhere (the app computes them), and keep notes to sourcing and verification items.
+    Competitions · west-indian-cricket-team-in-india-in-202627
+      notes is 3363 chars — that is a document, not a note. Move rules to the modelled columns, derived claims nowhere (the app computes them), and keep notes to sourcing and verification items.
+
+  [hygiene/notes-duplicated]
+    Olympic_Events · la28-fencing-ind-foil-m & la28-fencing-ind-epee-m & la28-fencing-ind-sabre-m & la28-fencing-ind-foil-w & la28-fencing-ind-epee-w & la28-fencing-ind-sabre-w
+      identical notes text (199 chars) on 6 rows: Olympic_Events·la28-fencing-ind-foil-m; Olympic_Events·la28-fencing-ind-epee-m; Olympic_Events·la28-fencing-ind-sabre-m; Olympic_Events·la28-fencing-ind-foil-w; Olympic_Events·la28-fencing-ind-epee-w; Olympic_Events·la28-fencing-ind-sabre-w. Duplicated prose is a paste — keep it on one row (or nowhere) and reference it from the others.
+    Olympic_Events · la28-fencing-team-foil-m & la28-fencing-team-epee-m & la28-fencing-team-sabre-m & la28-fencing-team-foil-w & la28-fencing-team-epee-w & la28-fencing-team-sabre-w
+      identical notes text (104 chars) on 6 rows: Olympic_Events·la28-fencing-team-foil-m; Olympic_Events·la28-fencing-team-epee-m; Olympic_Events·la28-fencing-team-sabre-m; Olympic_Events·la28-fencing-team-foil-w; Olympic_Events·la28-fencing-team-epee-w; Olympic_Events·la28-fencing-team-sabre-w. Duplicated prose is a paste — keep it on one row (or nowhere) and reference it from the others.
+    Olympic_Events · la28-cricket-m & la28-cricket-w
+      identical notes text (113 chars) on 2 rows: Olympic_Events·la28-cricket-m; Olympic_Events·la28-cricket-w. Duplicated prose is a paste — keep it on one row (or nowhere) and reference it from the others.
+    Competitions · fie-individual-grand-prix & fie-individual-senior-world-cup & fie-satellite-competitions & fie-individual-senior-world-championships & fie-individual-senior-continental-championships
+      identical notes text (83 chars) on 5 rows: Competitions·fie-individual-grand-prix; Competitions·fie-individual-senior-world-cup; Competitions·fie-satellite-competitions; Competitions·fie-individual-senior-world-championships; Competitions·fie-individual-senior-continental-championships. Duplicated prose is a paste — keep it on one row (or nowhere) and reference it from the others.
+    Competitions · fie-zonal-qualifying-europe & fie-zonal-qualifying-asia-oceania & fie-zonal-qualifying-americas & fie-zonal-qualifying-africa
+      identical notes text (150 chars) on 4 rows: Competitions·fie-zonal-qualifying-europe; Competitions·fie-zonal-qualifying-asia-oceania; Competitions·fie-zonal-qualifying-americas; Competitions·fie-zonal-qualifying-africa. Duplicated prose is a paste — keep it on one row (or nowhere) and reference it from the others.
+    Competitions · bangladeshi-cricket-team-in-south-africa-in-202627 & cricket-at-the-2026-asian-games-men-s-tournament & indian-cricket-team-in-bangladesh-in-2026 & sri-lankan-cricket-team-in-england-in-2026 & west-indian-cricket-team-in-india-in-202627
+      identical notes text (3363 chars) on 5 rows: Competitions·bangladeshi-cricket-team-in-south-africa-in-202627; Competitions·cricket-at-the-2026-asian-games-men-s-tournament; Competitions·indian-cricket-team-in-bangladesh-in-2026; Competitions·sri-lankan-cricket-team-in-england-in-2026; Competitions·west-indian-cricket-team-in-india-in-202627. Duplicated prose is a paste — keep it on one row (or nowhere) and reference it from the others.
+
+======================================================================
+INFO — 2
+======================================================================
+
+  [state/tie]
+    Standings · icc-womens-t20i-team-ranking#rank72
+      8 teams tied at rank 72 on rating 0 (Singapore, Eswatini, Saudi Arabia, Luxembourg, Cook Islands, Bulgaria, Belgium, Bahrain). Away from every cut-line; no action needed.
+
+  [coverage/pool-preview]
+    Cut_Lines · fiba-m-fopqt-7
+      TOP_N_OF_POOL pool derivation preview — second-round participants per feeding competition: 2027-fiba-basketball-world-cup-qualification-africa: 12; 2027-fiba-basketball-world-cup-qualification-europe: 24; 2027-fiba-basketball-world-cup-qualification-asia: 12; fiba-eurobasket-2029-pre-qualifiers-second-round: 12; 2027-fiba-basketball-world-cup-qualification-americas: 12. 60 distinct second-round teams advance toward 2027-fiba-basketball-world-cup (32-team field) → 28 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-africa (6-team field) → 6 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-americas (6-team field) → 6 of them miss it. 12 distinct second-round teams advance toward fiba-olympic-pre-qualifying-tournament-2027-for-asia (6-team field) → 6 of them miss it. The pool for this cut is teams NOT in those second rounds; membership resolves once standings for fiba-mens-world-ranking are captured.
+
+----------------------------------------------------------------------
+SUMMARY  (reference date 2026-08-02)
+  ERROR 6 · WARN 19 · INFO 2
+  coverage: 19 events · 148 links · 71 competitions · 313 fixtures (17 results recorded, 19 past) · 2 rankings with standings, 7 without · 8 cut-lines · 94 standings rows · 7 settled berths in Qualified
+  report written to report-v9.json
+
+NOT FIT TO PUBLISH — 6 error(s) must be fixed.

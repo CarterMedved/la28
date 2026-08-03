@@ -1,0 +1,557 @@
+{
+  "workbook": "data/LA28_Qualification_Database.xlsx",
+  "reference_date": "2026-08-02",
+  "generated_by": "la28-validator",
+  "summary": {
+    "error": 22,
+    "warn": 43,
+    "info": 1,
+    "suppressed": 0
+  },
+  "stats": {
+    "reference_date": "2026-08-02",
+    "events": 19,
+    "links": 146,
+    "competitions": 81,
+    "fixtures": 390,
+    "results_recorded": 16,
+    "past_fixtures": 63,
+    "rankings_with_standings": 2,
+    "rankings_without_standings": 7,
+    "cut_lines": 8,
+    "standings_rows": 94,
+    "qualified_rows": 0
+  },
+  "findings": [
+    {
+      "key": "referential/cuts-leads_to/fiba-m-fopqt-7",
+      "severity": "ERROR",
+      "rule": "referential/cuts-leads_to",
+      "tab": "Cut_Lines",
+      "rowId": "fiba-m-fopqt-7",
+      "message": "leads_to \"FOPQT 2027\" is not a competition_id or olympic_event_id — it looks like a display label. Replace it with the id of the competition or event this cut-line feeds."
+    },
+    {
+      "key": "state/complete-missing-dates/concacaf-u20-2026-qualification",
+      "severity": "ERROR",
+      "rule": "state/complete-missing-dates",
+      "tab": "Competitions",
+      "rowId": "concacaf-u20-2026-qualification",
+      "message": "status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in."
+    },
+    {
+      "key": "state/complete-missing-dates/afc-womens-asian-cup-2026",
+      "severity": "ERROR",
+      "rule": "state/complete-missing-dates",
+      "tab": "Competitions",
+      "rowId": "afc-womens-asian-cup-2026",
+      "message": "status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in."
+    },
+    {
+      "key": "state/complete-missing-dates/fwbwc-qualifying-tournaments-2026",
+      "severity": "ERROR",
+      "rule": "state/complete-missing-dates",
+      "tab": "Competitions",
+      "rowId": "fwbwc-qualifying-tournaments-2026",
+      "message": "status COMPLETE but start_date and end_date are blank or unparseable. A concluded competition has known dates; fill them in."
+    },
+    {
+      "key": "state/complete-but-future/2026-fiba-women-s-basketball-world-cup",
+      "severity": "ERROR",
+      "rule": "state/complete-but-future",
+      "tab": "Competitions",
+      "rowId": "2026-fiba-women-s-basketball-world-cup",
+      "message": "status COMPLETE but end_date 2026-09-13 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates."
+    },
+    {
+      "key": "state/complete-but-future/2026-fiba-women-s-olympic-pre-qualifying-tournament",
+      "severity": "ERROR",
+      "rule": "state/complete-but-future",
+      "tab": "Competitions",
+      "rowId": "2026-fiba-women-s-olympic-pre-qualifying-tournament",
+      "message": "status COMPLETE but end_date 2026-08-23 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates."
+    },
+    {
+      "key": "state/in-progress-not-started/2027-fiba-basketball-world-cup-qualification-africa",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-africa",
+      "message": "status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/in-progress-not-started/2027-fiba-basketball-world-cup-qualification-americas",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-americas",
+      "message": "status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/in-progress-not-started/2027-fiba-basketball-world-cup-qualification-asia",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-asia",
+      "message": "status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/in-progress-not-started/2027-fiba-basketball-world-cup-qualification-europe",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-europe",
+      "message": "status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/in-progress-not-started/eurobasket-women-2027-qualification",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "eurobasket-women-2027-qualification",
+      "message": "status IN_PROGRESS but start_date 2026-11-01 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/in-progress-not-started/fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "message": "status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/in-progress-not-started/fiba-women-s-afrobasket-2027-qualifiers",
+      "severity": "ERROR",
+      "rule": "state/in-progress-not-started",
+      "tab": "Competitions",
+      "rowId": "fiba-women-s-afrobasket-2027-qualifiers",
+      "message": "status IN_PROGRESS but start_date 2026-11-01 is after 2026-08-02. It has not begun; set status to SCHEDULED."
+    },
+    {
+      "key": "state/complete-but-future/fiba-women-s-americup-2027-south-american-qualifier",
+      "severity": "ERROR",
+      "rule": "state/complete-but-future",
+      "tab": "Competitions",
+      "rowId": "fiba-women-s-americup-2027-south-american-qualifier",
+      "message": "status COMPLETE but end_date 2026-08-06 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates."
+    },
+    {
+      "key": "state/tie/icc-womens-t20i-team-ranking#rank72",
+      "severity": "INFO",
+      "rule": "state/tie",
+      "tab": "Standings",
+      "rowId": "icc-womens-t20i-team-ranking#rank72",
+      "message": "8 teams tied at rank 72 on rating 0 (Singapore, Eswatini, Saudi Arabia, Luxembourg, Cook Islands, Bulgaria, Belgium, Bahrain). Away from every cut-line; no action needed."
+    },
+    {
+      "key": "state/confirmed-placeholder-dates/eurobasket-women-2027-qualification",
+      "severity": "ERROR",
+      "rule": "state/confirmed-placeholder-dates",
+      "tab": "Competitions",
+      "rowId": "eurobasket-women-2027-qualification",
+      "message": "date_confidence is CONFIRMED but the dates look like placeholders: the window 2026-11-01 → 2027-02-28 runs along calendar-month boundaries at both ends and no real fixture falls inside it (its only fixtures are placeholders or fall outside it). Set date_confidence to TBD or APPROXIMATE, or replace the dates with the real schedule."
+    },
+    {
+      "key": "state/confirmed-placeholder-dates/fiba-women-s-afrobasket-2027-qualifiers",
+      "severity": "ERROR",
+      "rule": "state/confirmed-placeholder-dates",
+      "tab": "Competitions",
+      "rowId": "fiba-women-s-afrobasket-2027-qualifiers",
+      "message": "date_confidence is CONFIRMED but the dates look like placeholders: the window 2026-11-01 → 2027-06-30 runs along calendar-month boundaries at both ends and no real fixture falls inside it (its only fixtures are placeholders or fall outside it). Set date_confidence to TBD or APPROXIMATE, or replace the dates with the real schedule."
+    },
+    {
+      "key": "state/completed-without-outcome/afc-womens-asian-cup-2026",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "afc-womens-asian-cup-2026",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "state/completed-without-outcome/caf-w-oqt-2028-r1",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "caf-w-oqt-2028-r1",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "state/completed-without-outcome/copa-america-femenina-2025",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "copa-america-femenina-2025",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "state/completed-without-outcome/2026-fiba-women-s-basketball-world-cup",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "2026-fiba-women-s-basketball-world-cup",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "state/completed-without-outcome/2026-fiba-women-s-olympic-pre-qualifying-tournament",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "2026-fiba-women-s-olympic-pre-qualifying-tournament",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "state/completed-without-outcome/fiba-women-s-americup-2027-south-american-qualifier",
+      "severity": "ERROR",
+      "rule": "state/completed-without-outcome",
+      "tab": "Competitions",
+      "rowId": "fiba-women-s-americup-2027-south-american-qualifier",
+      "message": "status COMPLETE but the outcome is recorded nowhere: no fixture has a result, no Qualified row cites it, no Standings row names it in qualified_via, and no downstream competition it feeds has a materialised field. The graph never learned who won — every pathway through this node is blocked. Add Qualified rows, record results, or fixture the downstream field."
+    },
+    {
+      "key": "coverage/cut-line-unlocatable/fiba-m-fopqt-7",
+      "severity": "WARN",
+      "rule": "coverage/cut-line-unlocatable",
+      "tab": "Cut_Lines",
+      "rowId": "fiba-m-fopqt-7",
+      "message": "threshold for \"Seven FOPQT places on ranking\" (TOP_N_OF_POOL) cannot be located: its ranking has zero standings rows captured. Extend the Standings capture for fiba-mens-world-ranking to unblock it."
+    },
+    {
+      "key": "coverage/cut-line-zero-headroom/icc-m-host-top15",
+      "severity": "WARN",
+      "rule": "coverage/cut-line-zero-headroom",
+      "tab": "Cut_Lines",
+      "rowId": "icc-m-host-top15",
+      "message": "threshold for \"Host place test — rank 15 or better\" resolves at rank 15 — exactly the captured depth of icc-mens-t20i-team-ranking. Zero headroom: the next standings refresh that moves the edge team down will make this cut unlocatable. Capture more rows now."
+    },
+    {
+      "key": "coverage/past-fixtures-no-result/(aggregate)",
+      "severity": "WARN",
+      "rule": "coverage/past-fixtures-no-result",
+      "tab": "Fixtures",
+      "rowId": "(aggregate)",
+      "message": "47 of 63 past fixtures have no result recorded (75%). Backfill results or the app shows played games as pending."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-baseball-european-championship-b-pool-group-bulgaria",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-baseball-european-championship-b-pool-group-bulgaria",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-baseball-european-championship-b-pool-group-poland",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-baseball-european-championship-b-pool-group-poland",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-central-american-and-caribbean-games-men-s-field-hockey",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-central-american-and-caribbean-games-men-s-field-hockey",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-central-american-and-caribbean-games-women",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-central-american-and-caribbean-games-women",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-fiba-3x3-women-s-series-tokyo-stop",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-fiba-3x3-women-s-series-tokyo-stop",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-fivb-men-s-volleyball-nations-league",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-fivb-men-s-volleyball-nations-league",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-ifaf-men-s-flag-football-world-championship",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-ifaf-men-s-flag-football-world-championship",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2026-uec-mountain-bike-european-championships-xco",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2026-uec-mountain-bike-european-championships-xco",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2027-wbsc-premier12",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2027-wbsc-premier12",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2027-wbsc-premier12-qualification",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2027-wbsc-premier12-qualification",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2027-women-s-softball-european-championship",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2027-women-s-softball-european-championship",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/unlinked-competition/2027-women-s-softball-world-cup",
+      "severity": "WARN",
+      "rule": "coverage/unlinked-competition",
+      "tab": "Competitions",
+      "rowId": "2027-women-s-softball-world-cup",
+      "message": "referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope."
+    },
+    {
+      "key": "coverage/fixtures-before-start/2026-concacaf-u-20-championship",
+      "severity": "WARN",
+      "rule": "coverage/fixtures-before-start",
+      "tab": "Competitions",
+      "rowId": "2026-concacaf-u-20-championship",
+      "message": "earliest fixture is 2026-07-24 but start_date is 2026-07-25. start_date must be the competition's true start; fix it or the fixture date."
+    },
+    {
+      "key": "coverage/fixtures-before-start/2028-fiba-men-s-olympic-qualifying-tournaments",
+      "severity": "WARN",
+      "rule": "coverage/fixtures-before-start",
+      "tab": "Competitions",
+      "rowId": "2028-fiba-men-s-olympic-qualifying-tournaments",
+      "message": "earliest fixture is 2027-06-26 but start_date is 2028-06-26. start_date must be the competition's true start; fix it or the fixture date."
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-africa",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-africa",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-europe",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-europe",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-asia",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-asia",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "fiba-eurobasket-2029-pre-qualifiers-second-round",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/missing-earlier-rounds/2027-fiba-basketball-world-cup-qualification-americas",
+      "severity": "WARN",
+      "rule": "coverage/missing-earlier-rounds",
+      "tab": "Competitions",
+      "rowId": "2027-fiba-basketball-world-cup-qualification-americas",
+      "message": "stages reference a second round but no first-round fixtures are captured. If start_date equals the first captured fixture it is the start of the captured segment, not of the competition — check start_date, and note the uncaptured round. (This flags the missing round only; it implies nothing about how many fixtures the captured round should have.)"
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2026-ifaf-men-s-flag-football-world-championship",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2026-ifaf-men-s-flag-football-world-championship",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0085). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/cricket-at-the-2026-asian-games-men-s-tournament",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "cricket-at-the-2026-asian-games-men-s-tournament",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0226). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/fiba-women-s-afrobasket-2027-qualifiers",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "fiba-women-s-afrobasket-2027-qualifiers",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0238). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/eurobasket-women-2027-qualification",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "eurobasket-women-2027-qualification",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0239). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/eurobasket-women-2027",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "eurobasket-women-2027",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0379). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2028-fiba-men-s-olympic-qualifying-tournaments",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2028-fiba-men-s-olympic-qualifying-tournaments",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0380). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2027-fiba-women-s-americup",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2027-fiba-women-s-americup",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0381). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2027-fiba-women-s-asia-cup",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2027-fiba-women-s-asia-cup",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0382). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2027-women-s-softball-european-championship",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2027-women-s-softball-european-championship",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0383). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/two-fiba-olympic-pre-qualifying-tournaments-2027-for-europe",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "two-fiba-olympic-pre-qualifying-tournaments-2027-for-europe",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0384). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/fiba-olympic-pre-qualifying-tournament-2027-for-africa",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "fiba-olympic-pre-qualifying-tournament-2027-for-africa",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0385). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/fiba-olympic-pre-qualifying-tournament-2027-for-asia",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "fiba-olympic-pre-qualifying-tournament-2027-for-asia",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0386). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/fiba-olympic-pre-qualifying-tournament-2027-for-americas",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "fiba-olympic-pre-qualifying-tournament-2027-for-americas",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0387). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2027-fiba-basketball-world-cup",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2027-fiba-basketball-world-cup",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0388). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2027-wbsc-premier12",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2027-wbsc-premier12",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0389). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/placeholder-fixtures/2028-fiba-women-s-olympic-qualifying-tournaments",
+      "severity": "WARN",
+      "rule": "coverage/placeholder-fixtures",
+      "tab": "Fixtures",
+      "rowId": "2028-fiba-women-s-olympic-qualifying-tournaments",
+      "message": "1 placeholder fixture(s) with stage \"Not yet drawn\" (fx-0390). Delete it — an undrawn competition should have zero fixtures, and after the placeholder date passes it counts forever as a past fixture with no result."
+    },
+    {
+      "key": "coverage/round-robin-incomplete/2026-baseball-european-championship-b-pool-group-bulgaria",
+      "severity": "WARN",
+      "rule": "coverage/round-robin-incomplete",
+      "tab": "Competitions",
+      "rowId": "2026-baseball-european-championship-b-pool-group-bulgaria",
+      "message": "single round-robin group of 5 where 5 team(s) do not meet every groupmate (e.g. Romania: 2 of 4 opponents) — fixtures are missing."
+    },
+    {
+      "key": "coverage/round-robin-incomplete/2026-baseball-european-championship-b-pool-group-poland",
+      "severity": "WARN",
+      "rule": "coverage/round-robin-incomplete",
+      "tab": "Competitions",
+      "rowId": "2026-baseball-european-championship-b-pool-group-poland",
+      "message": "single round-robin group of 6 where 6 team(s) do not meet every groupmate (e.g. Norway: 2 of 5 opponents) — fixtures are missing."
+    },
+    {
+      "key": "coverage/round-robin-incomplete/2026-central-american-and-caribbean-games-women",
+      "severity": "WARN",
+      "rule": "coverage/round-robin-incomplete",
+      "tab": "Competitions",
+      "rowId": "2026-central-american-and-caribbean-games-women",
+      "message": "single round-robin group of 6 where 6 team(s) do not meet every groupmate (e.g. Cuba: 2 of 5 opponents) — fixtures are missing."
+    },
+    {
+      "key": "coverage/round-robin-incomplete/2026-fiba-3x3-women-s-series-tokyo-stop",
+      "severity": "WARN",
+      "rule": "coverage/round-robin-incomplete",
+      "tab": "Competitions",
+      "rowId": "2026-fiba-3x3-women-s-series-tokyo-stop",
+      "message": "format declares 18 teams but 16 appear in group-stage fixtures."
+    },
+    {
+      "key": "coverage/round-robin-incomplete/2026-fivb-men-s-volleyball-nations-league",
+      "severity": "WARN",
+      "rule": "coverage/round-robin-incomplete",
+      "tab": "Competitions",
+      "rowId": "2026-fivb-men-s-volleyball-nations-league",
+      "message": "single round-robin group of 3 where 2 team(s) do not meet every groupmate (e.g. Italy: 1 of 2 opponents) — fixtures are missing. single round-robin group of 3 where 2 team(s) do not meet every groupmate (e.g. Ukraine: 1 of 2 opponents) — fixtures are missing."
+    }
+  ],
+  "suppressed": [],
+  "unused_suppressions": []
+}

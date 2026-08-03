@@ -1,0 +1,82 @@
+{
+ "expected": [
+  {
+   "sheet": "Fixtures",
+   "key": "(header)",
+   "col": "tz_source",
+   "kind": "col-add"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0086",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0087",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0088",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0089",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0090",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0091",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0092",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0093",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0094",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0095",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0096",
+   "col": "tz_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0097",
+   "col": "tz_source",
+   "kind": "cell"
+  }
+ ]
+}

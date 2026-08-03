@@ -1,0 +1,76 @@
+{
+ "expected": [
+  {
+   "sheet": "Qualified",
+   "key": "la28-cricket-w#New Zealand",
+   "col": "notes",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0391",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0392",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0393",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0394",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0395",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0396",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0401",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0402",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0403",
+   "col": "stage_source",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Links",
+   "key": "bkb-013",
+   "col": "eligibility_note",
+   "kind": "cell"
+  },
+  {
+   "sheet": "Cut_Lines",
+   "key": "fiba-m-fopqt-7",
+   "col": "notes",
+   "kind": "cell"
+  }
+ ]
+}

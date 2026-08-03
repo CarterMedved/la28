@@ -1,0 +1,90 @@
+
+======================================================================
+ERROR — 11
+======================================================================
+
+  [referential/cuts-leads_to]
+    Cut_Lines · fiba-m-fopqt-7
+      leads_to "FOPQT 2027" is not a competition_id or olympic_event_id — it looks like a display label. Replace it with the id of the competition or event this cut-line feeds.
+
+  [state/complete-but-future]
+    Competitions · 2026-fiba-women-s-basketball-world-cup
+      status COMPLETE but end_date 2026-09-13 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates.
+    Competitions · 2026-fiba-women-s-olympic-pre-qualifying-tournament
+      status COMPLETE but end_date 2026-08-23 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates.
+    Competitions · fiba-women-s-americup-2027-south-american-qualifier
+      status COMPLETE but end_date 2026-08-06 is after 2026-08-02. It cannot have concluded; set status to SCHEDULED or fix the dates.
+
+  [state/in-progress-not-started]
+    Competitions · 2027-fiba-basketball-world-cup-qualification-africa
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · 2027-fiba-basketball-world-cup-qualification-americas
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · 2027-fiba-basketball-world-cup-qualification-asia
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · 2027-fiba-basketball-world-cup-qualification-europe
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · eurobasket-women-2027-qualification
+      status IN_PROGRESS but start_date 2026-11-01 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · fiba-eurobasket-2029-pre-qualifiers-second-round
+      status IN_PROGRESS but start_date 2026-08-27 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+    Competitions · fiba-women-s-afrobasket-2027-qualifiers
+      status IN_PROGRESS but start_date 2026-11-01 is after 2026-08-02. It has not begun; set status to SCHEDULED.
+
+======================================================================
+WARN — 15
+======================================================================
+
+  [coverage/cut-line-unlocatable]
+    Cut_Lines · fiba-m-fopqt-7
+      threshold for "Seven FOPQT places on ranking" (TOP_N_OF_POOL) cannot be located: its ranking has zero standings rows captured. Extend the Standings capture for fiba-mens-world-ranking to unblock it.
+
+  [coverage/cut-line-zero-headroom]
+    Cut_Lines · icc-m-host-top15
+      threshold for "Host place test — rank 15 or better" resolves at rank 15 — exactly the captured depth of icc-mens-t20i-team-ranking. Zero headroom: the next standings refresh that moves the edge team down will make this cut unlocatable. Capture more rows now.
+
+  [coverage/past-fixtures-no-result]
+    Fixtures · (aggregate)
+      47 of 63 past fixtures have no result recorded (75%). Backfill results or the app shows played games as pending.
+
+  [coverage/unlinked-competition]
+    Competitions · 2026-baseball-european-championship-b-pool-group-bulgaria
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-baseball-european-championship-b-pool-group-poland
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-central-american-and-caribbean-games-men-s-field-hockey
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-central-american-and-caribbean-games-women
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-fiba-3x3-women-s-series-tokyo-stop
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-fivb-men-s-volleyball-nations-league
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-ifaf-men-s-flag-football-world-championship
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2026-uec-mountain-bike-european-championships-xco
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-wbsc-premier12
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-wbsc-premier12-qualification
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-women-s-softball-european-championship
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+    Competitions · 2027-women-s-softball-world-cup
+      referenced by no Link — nothing downstream reaches it and no pathway includes it. Link it or note it as out of scope.
+
+======================================================================
+INFO — 1
+======================================================================
+
+  [state/tie]
+    Standings · icc-womens-t20i-team-ranking#rank72
+      8 teams tied at rank 72 on rating 0 (Singapore, Eswatini, Saudi Arabia, Luxembourg, Cook Islands, Bulgaria, Belgium, Bahrain). Away from every cut-line; no action needed.
+
+----------------------------------------------------------------------
+SUMMARY  (reference date 2026-08-02)
+  ERROR 11 · WARN 15 · INFO 1
+  coverage: 19 events · 146 links · 81 competitions · 390 fixtures (16 results recorded, 63 past) · 2 rankings with standings, 7 without · 8 cut-lines · 94 standings rows
+  report written to report.json
+
+NOT FIT TO PUBLISH — 11 error(s) must be fixed.

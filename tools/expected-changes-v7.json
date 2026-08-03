@@ -1,0 +1,520 @@
+{
+ "expected": [
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0273",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0272",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0271",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0258",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0257",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0240",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0235",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0233",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0232",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0231",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0230",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0228",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0217",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0216",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0215",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0213",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0211",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0210",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0209",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0208",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0207",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0206",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0205",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0204",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0201",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0200",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0199",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0067",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0066",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0065",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0061",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0060",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0059",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0058",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0057",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0056",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0055",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0054",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0053",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0052",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0051",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0050",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0049",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0048",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0047",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0046",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0045",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0044",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0043",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0042",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0041",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0040",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0038",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0037",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0035",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0034",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0033",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0032",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0031",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0030",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0029",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0028",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0027",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0023",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0022",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0021",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0020",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0019",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0018",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0017",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0016",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0015",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0014",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Fixtures",
+   "key": "fx-0013",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-women-s-softball-world-cup",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-women-s-softball-european-championship",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-wbsc-premier12-qualification",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2027-wbsc-premier12",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-uec-mountain-bike-european-championships-xco",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-ifaf-men-s-flag-football-world-championship",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-fivb-men-s-volleyball-nations-league",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-fiba-3x3-women-s-series-tokyo-stop",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-central-american-and-caribbean-games-women",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-central-american-and-caribbean-games-men-s-field-hockey",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-baseball-european-championship-b-pool-group-poland",
+   "col": null,
+   "kind": "row-del"
+  },
+  {
+   "sheet": "Competitions",
+   "key": "2026-baseball-european-championship-b-pool-group-bulgaria",
+   "col": null,
+   "kind": "row-del"
+  }
+ ]
+}
