@@ -91,6 +91,12 @@ From the new Sheet: **File → Download → Microsoft Excel (.xlsx)**, save as
 
 ## D. First real run
 
+Before pushing this or ANY later workflow/pipeline change:
+`node test/ci-rehearsal.mjs` — replays the workflow's commands against a
+fresh-checkout scratch tree (runs 1–3 plus fail-closed negatives). CI run 1
+failed on a fresh-checkout path assumption no local run could see; the
+rehearsal exists so that class is caught before a push, not by run 1.
+
 Rename: `git mv .github/workflows/publish.yml.disabled
 .github/workflows/publish.yml`, commit, push. Actions tab → publish →
 **Run workflow** (don't wait for the 06:17 UTC cron).

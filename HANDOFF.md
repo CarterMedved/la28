@@ -153,6 +153,18 @@ executed against the real dataset), Qualified round-trip, eligibility-render, ve
 Negative tests run against an empty suppression file — otherwise installing a real suppression
 silently stops a test from proving anything.
 
+**`test/ci-rehearsal.mjs` — run before pushing ANY workflow or pipeline change.** It replays
+the workflow's own commands against a scratch tree of tracked files only (the shape
+actions/checkout produces): pull via the `LA28_PULL_STUB` seam, then the designed run-1
+failure, ack, publishing run 2, SKIP run 3, plus fail-closed negatives (exits 2/4/5 with the
+standing message; the run-1 ENOENT defect reintroduced in the scratch copy must fail legibly).
+It exists because CI run 1 died on a path assumption — `.ci-state/` existed locally as a side
+effect of every local run and had never existed in CI. Anything gitignored that local runs
+create is invisible to local testing and absent in CI; the rehearsal makes that class visible.
+Pull exit codes: 2 config · 3 token refused · 4 export/not-xlsx · 5 cannot write · 6 catch-all
+(any unexpected throw still names a cause and prints the artefact-stands line — never a raw
+stack).
+
 **Suppression discipline:** `known-issues.json` entries need a note saying what would clear
 them. Remove entries the moment they resolve; a stale suppression is worse than none.
 
