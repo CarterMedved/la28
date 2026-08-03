@@ -19,7 +19,7 @@ ruleset; see docs/stage-four.md.*
    downloaded file IS the credential: it lives in Downloads only until step
    C-1 pastes it into the secret store, and never enters the repo tree.
 5. Copy the account email: `la28-pull@<project>.iam.gserviceaccount.com`.
-6. Upload `data/LA28_Qualification_Database_v21.xlsx` to Drive → open →
+6. Upload `data/LA28_Qualification_Database_v22.xlsx` to Drive → open →
    **File → Save as Google Sheets**. This new Sheet is about to become the
    canonical workbook (see CUTOVER below) — but not before the preflight.
 
@@ -31,24 +31,27 @@ From the new Sheet: **File → Download → Microsoft Excel (.xlsx)**, save as
 1. **Validator**: `node src/validate/cli.ts preflight-1.xlsx
    --reference-date <today> --known-issues known-issues.json --sentinels
    sentinels.json` → must be 0 ERROR with the same WARN/INFO composition
-   as v21.
+   as v22 (10 WARN · 2 INFO).
 2. **Round-trip**: `node test/data-roundtrip.mjs preflight-1.xlsx --ci` →
    all checks pass.
 3. **Cell-exact diff** — the check the first two cannot make (both pass on
    a workbook whose date FORMATS silently changed, which is exactly the
    toStamp failure class):
-   `node tools/diff-workbooks.mjs data/LA28_Qualification_Database_v21.xlsx
+   `node tools/diff-workbooks.mjs data/LA28_Qualification_Database_v22.xlsx
    preflight-1.xlsx tools/expected-none.json`
    → must print **EXACT MATCH** with 0 observed changes. Anything else:
    STOP and enumerate every listed difference to the owner — the list, not
    a verdict. Import fidelity problems get fixed before CI exists.
 4. **Double-export comparison — CELL VALUES and NUMBER FORMATS, never
    zip structure.** Without touching the Sheet, download the xlsx a
-   SECOND time as `preflight-2.xlsx`. Then compare the two exports at
-   the level that matters: **every cell value identical across all nine
-   tabs, and every number format identical** (Fixtures.date must read
-   `yyyy-mm-dd h:mm:ss` in both — the toStamp bug came from a number
-   format, so formats ARE content here).
+   SECOND time as `preflight-2.xlsx`. Then:
+   `node tools/compare-exports.mjs preflight-1.xlsx preflight-2.xlsx`
+   — compares the two exports at the level that matters: **every cell
+   value identical across all nine tabs, and every number format
+   identical** (Fixtures.date must read `yyyy-mm-dd h:mm:ss` in both,
+   on date-typed cells — the toStamp bug came from a number format, so
+   formats ARE content here). It prints both file sha256s for the
+   record and exits 1 with a full enumeration on any difference.
    **MEASURED 4 Aug 2026, and the byte delta is NOT compression or
    mtimes:** Google RE-SERIALISES the sheet XML between exports — 11 zip
    entries had different CRC-32s and 9 had different uncompressed XML
@@ -128,11 +131,11 @@ preflight passes:
 
 - **Canonical**: the Sheet. Every data change is made THERE and reaches
   the site only through pull → gate → validator → publish.
-- **`data/*.xlsx` in the repo is history**: the v5–v21 lineage plus the
+- **`data/*.xlsx` in the repo is history**: the v5–v22 lineage plus the
   edit scripts document how every value got its provenance, and
   `data/LA28_Qualification_Database.xlsx` remains the harnesses' pinned
   fixture. **Editing a repo workbook changes NOTHING on the site** — the
-  obvious mistake is hand-editing local v21, diff-proving it, and
+  obvious mistake is hand-editing local v22, diff-proving it, and
   wondering why the site never moved. The pipeline reads only the Sheet.
 - **Outage procedure (Sheets or the pipeline down)**: there is NO local
   publish path, by design — the last published artefact standing is the
