@@ -63,17 +63,27 @@ What enforces it (not memory):
   Skip-on-unchanged-workbook-hash alone means a run whose advancing
   reference date turns a SCHEDULED competition into an ERROR never reaches
   the site, which keeps serving `fit_to_publish: true` from an older run.
-  **Publish is skipped only when the workbook hash AND the validator
-  summary are both unchanged** — and "summary unchanged" means **the rules
-  map compares equal** (`{rule_key: count}`, deep), never the E/W/I
-  totals: 9 WARN → 9 WARN with one key cleared and another appeared is a
-  composition change and must publish. Same reasoning that made the
+  **Publish is skipped only when the workbook CONTENT hash AND the
+  validator summary are both unchanged** — and "summary unchanged" means
+  **the rules map compares equal** (`{rule_key: count}`, deep), never the
+  E/W/I totals: 9 WARN → 9 WARN with one key cleared and another appeared
+  is a composition change and must publish. Same reasoning that made the
   composition delta the reporting signal — totals are noise, keys are
   signal. (The summary also moves when validator code or suppressions
   change — same workbook, same date, different verdict must publish.)
-  Consequence for the archive key: workbook sha alone now collides when
-  the same workbook republishes with new meta. The key becomes a digest
-  of `sha256(workbook_sha + reference_date + rules_map_json)`, truncated.
+  **DUAL-HASH (measured 4 Aug 2026, implemented same day):** Google's
+  xlsx export is byte-UNSTABLE on unchanged content — two exports of an
+  untouched Sheet differed in sha256 and size (120,570 vs 120,615 bytes)
+  with zero differing cells — so raw-bytes identity would republish daily
+  and write a pointless archive commit every run. `content_sha256`
+  (sha256 of the normalised data block, exactly what data.json carries)
+  drives the SKIP decision, the ARCHIVE KEY and the BOOTSTRAP digest;
+  `workbook_sha256` (raw bytes) keeps its one job, the baseline INTEGRITY
+  check, whose two sides come from the same stored bytes at seed time and
+  never cross an export boundary. Proven in `test/ci-gate.mjs` against a
+  genuine byte-variant container.
+  Consequence for the archive key: it is a digest of
+  `sha256(content_sha + reference_date + rules_map_json)`, truncated.
   **Precisely stated:** the key is unique per published artefact — it is
   NOT the skip condition. The skip condition compares workbook + rules
   map against the *last published* run and ignores reference_date; the
@@ -275,10 +285,28 @@ one unacked gated change could publish. Options weighed:
   directions in `test/ci-gate.mjs`). No baseline — evicted cache,
   unreachable branch, genuine first run — exits non-zero and publishes
   nothing, printing the bootstrap recipe; a genuine first publish is an
-  explicit acked bootstrap whose digest (`sha256("BOOTSTRAP·<workbook
-  sha256>")`) authorises those exact bytes only. The archive branch is
-  therefore a durability improvement, not the thing holding the
-  invariant up.
+  explicit acked bootstrap whose digest (`sha256("BOOTSTRAP·<content
+  sha256>")`) authorises exactly that DATA — a byte-unstable re-export of
+  unchanged content still matches; any data change does not. The archive
+  branch is therefore a durability improvement, not the thing holding
+  the invariant up.
+
+  **NO FORMULAS IN THE PUBLISHED WORKBOOK (general rule, 4 Aug 2026).** A
+  Google Sheet RECALCULATES on import: any formula becomes live data the
+  pipeline pulls, mutating outside the gate. Measured on v21's upload:
+  461 formula cells across three self-check columns, 288 of them with
+  silently drifted row references — 238 evaluated "OK" while validating
+  the WRONG row, some referencing rows past the sheet's end. The
+  architecture is that the sheet stores declared facts and code derives
+  everything else; self-checks belong in the validator, where every one
+  of these formulas' intents already has a tested rule
+  (`referential/fixtures-competition_id`, `referential/links-from_id`/
+  `-to_id`, `arithmetic/berth-sum`). Enforcement: a validator rule
+  (`hygiene/formula-cells`, ERROR) fails on any formula cell — SheetJS
+  retains `cell.f` even though the loader consumes values, so load.ts
+  surfaces a `formulaCells` list for the rule; it lands together with the
+  formula-column deletion pass so the battery never sees 461 spurious
+  errors.
 
   **The archive branch is NOT unprotected — it gets its own ruleset**,
   because it carries the gate baseline: a token that can force-push it

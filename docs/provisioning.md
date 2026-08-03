@@ -45,21 +45,27 @@ From the new Sheet: **File → Download → Microsoft Excel (.xlsx)**, save as
 4. **Export byte-stability**: without touching the Sheet, download the
    xlsx a SECOND time as `preflight-2.xlsx`, then
    `shasum -a 256 preflight-1.xlsx preflight-2.xlsx`.
-   - **Identical** → Google's export is byte-stable; the raw-bytes skip
-     identity in ci-publish stands; proceed.
-   - **Different** → the skip-publish idempotence is broken by
-     construction (it keys on the workbook hash): an untouched sheet would
-     publish daily and write a pointless archive commit every run. STOP
-     and implement the dual-hash fix before wiring:
-     **meta gains `content_sha256`** = sha256 of the normalised data block
-     (the loadWorkbook→strip rows, exactly what data.json carries), used
-     for the SKIP decision and the archive key; **`workbook_sha256` (raw
-     bytes) stays** and keeps its one job: the baseline integrity check,
-     which compares the STORED baseline workbook against the sha recorded
-     when that same file was seeded — self-consistent bytes, so export
-     instability costs it nothing. Two hashes, two labelled jobs; the
-     bootstrap digest moves to content_sha256 too (it must survive a
-     byte-unstable re-export of unchanged data).
+   **MEASURED 4 Aug 2026: DIFFERENT** (120,570 vs 120,615 bytes, zero
+   differing cells) — Google's export is byte-unstable, content-stable.
+   **The dual-hash is therefore implemented**: `content_sha256` (sha256
+   of the normalised data block, exactly what data.json carries) drives
+   the SKIP decision, the archive key and the bootstrap digest;
+   `workbook_sha256` (raw bytes) keeps its one job, the baseline
+   integrity check, whose two sides come from the same stored bytes and
+   never cross an export boundary. Proven against a byte-variant
+   container in `test/ci-gate.mjs`. This step stays in the preflight as a
+   regression sentinel: if TWO exports ever differ at the CELL level,
+   that is a new Google behaviour — stop and investigate.
+
+5. **No formulas** (general rule, measured the hard way — see
+   docs/stage-four.md): a Sheet RECALCULATES on import, so any formula in
+   the workbook becomes live data the pipeline pulls. v21 carried 461
+   formula cells in three self-check columns, 288 with silently drifted
+   row references. The formula columns are deleted before cutover (their
+   intents are already tested validator rules), and
+   `hygiene/formula-cells` (ERROR) enforces the rule thereafter. If
+   preflight (a) ever shows a formula-bearing diff again, the rule was
+   bypassed — stop.
 
 ## C. GitHub side (repo Settings, CarterMedved/la28)
 
@@ -92,6 +98,23 @@ Rename: `git mv .github/workflows/publish.yml.disabled
 - Revocation drill (any time): deleting the key in the Google console
   makes the next pull fail closed at token exchange; the site keeps
   serving the last artefact.
+
+## Preflight-failure fix sequence (established 4 Aug 2026)
+
+When the preflight finds a workbook defect (as it did: the formula
+columns), the fix goes **LOCAL FIRST, then re-upload, then full
+re-preflight**:
+
+1. Fix in the local workbook as a normal versioned edit pass
+   (apply-edits-vN + expected-changes + diff-proof + battery) — the
+   lineage stays the record, and cutover has NOT happened yet: the
+   preflight is the cutover gate, and canonical transfers to the Sheet
+   only when it passes.
+2. Replace the Sheet's content from the fixed xlsx (File → Import →
+   **Replace spreadsheet** — never delete-and-recreate, which would
+   change the spreadsheet ID the pipeline pins).
+3. Re-run the ENTIRE preflight (B1–B5) against the new export. Only a
+   full pass moves canonical status to the Sheet.
 
 ## CUTOVER — what is canonical after step A6
 

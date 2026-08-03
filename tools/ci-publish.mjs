@@ -11,9 +11,10 @@
  * - Validator: exit 1 on unsuppressed ERROR only — the existing boundary.
  *   A failing run still archives its meta + report (no data block) so
  *   fit_to_publish:false runs exist in the archive corpus (§4).
- * - Skip-check: publish is skipped only when workbook sha AND the rules
- *   map ({rule_key: count}, deep) are BOTH unchanged vs the last published
- *   run. Never compares E/W/I totals.
+ * - Skip-check: publish is skipped only when workbook CONTENT sha (the
+ *   normalised data block — raw bytes are export-unstable, measured
+ *   4 Aug 2026) AND the rules map ({rule_key: count}, deep) are BOTH
+ *   unchanged vs the last published run. Never compares E/W/I totals.
  * - Round-trip: test/data-roundtrip.mjs --ci against the pulled workbook —
  *   the only guard on the artefact itself, between emit and publish.
  * - Publish: archive copy written and fsynced first, then temp + rename
@@ -29,7 +30,7 @@ import { readFileSync, writeFileSync, copyFileSync, mkdirSync, existsSync,
          openSync, writeSync, fsyncSync, closeSync, renameSync, rmSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { emit } from "./emit-data.mjs";
+import { emit, contentSha256 } from "./emit-data.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const args = process.argv.slice(2);
@@ -50,6 +51,11 @@ try { rmSync(`${STATE}/publish-happened`); } catch { /* absent is the normal cas
 
 const sha256 = buf => createHash("sha256").update(buf).digest("hex");
 const wbSha = sha256(readFileSync(WB));
+// Content identity (dual-hash, measured 4 Aug 2026 — Google's export is
+// byte-unstable on unchanged content): contentSha drives skip / archive
+// key / bootstrap; wbSha keeps exactly one job, the baseline integrity
+// check, whose two sides never cross an export boundary.
+const contentSha = contentSha256(WB);
 const stableRules = r => JSON.stringify(Object.fromEntries(Object.entries(r ?? {}).sort(([a], [b]) => a.localeCompare(b))));
 const writeFsync = (path, text) => {
   const fd = openSync(path, "w");
@@ -116,10 +122,10 @@ if (existsSync(lastWbPath)) {
   // FAIL CLOSED: a missing baseline is indistinguishable from an evicted or
   // unreachable one, and an ungated publish is exactly what the gate exists
   // to prevent. A genuine first run is an EXPLICIT, acked bootstrap: a
-  // human commits an ack whose digest binds the exact workbook bytes being
-  // bootstrapped — any other workbook, including a later edit of the same
-  // sheet, fails until re-acked.
-  const bootstrapDigest = createHash("sha256").update(`BOOTSTRAP·${wbSha}`).digest("hex");
+  // human commits an ack whose digest binds the workbook CONTENT being
+  // bootstrapped — a byte-unstable re-export of the same data still
+  // matches; any data change, however small, fails until re-acked.
+  const bootstrapDigest = createHash("sha256").update(`BOOTSTRAP·${contentSha}`).digest("hex");
   const acks = existsSync(ACKS) ? JSON.parse(readFileSync(ACKS, "utf8")).acks ?? [] : [];
   const matched = acks.find(a => a.digest === bootstrapDigest);
   if (matched) {
@@ -129,9 +135,10 @@ if (existsSync(lastWbPath)) {
     console.error("The last-published workbook is missing (evicted cache, unreachable archive,");
     console.error("or a genuine first run). Publishing without a baseline would skip the gate,");
     console.error("so this run publishes NOTHING. If this IS the intended first publish of");
-    console.error(`workbook ${wbSha.slice(0, 12)}…, review it and commit to pull-acks.json:`);
+    console.error(`workbook content ${contentSha.slice(0, 12)}…, review it and commit to pull-acks.json:`);
     console.error(`  { "digest": "${bootstrapDigest}", "note": "bootstrap: <why there is no baseline>", "date": "<today>" }`);
-    console.error("(digest = sha256 of \"BOOTSTRAP·<workbook sha256>\" — it authorises these exact bytes only)");
+    console.error("(digest = sha256 of \"BOOTSTRAP·<content sha256>\" — it authorises exactly this DATA; a byte-unstable");
+    console.error(" re-export of unchanged content still matches, any data change does not)");
     console.error("\nCHAIN STOPPED at gate-ack (no baseline). Nothing published.");
     process.exit(1);
   }
@@ -144,7 +151,7 @@ const validatorOk = run("validator gate",
    "--json", reportPath, "--known-issues", root + "known-issues.json", "--sentinels", root + "sentinels.json"]);
 const artefact = emit(WB, { reportPath, referenceDate: REF_DATE });
 const rules = artefact.meta.validator.rules;
-const archiveKey = sha256(wbSha + REF_DATE + stableRules(rules)).slice(0, 12);
+const archiveKey = sha256(contentSha + REF_DATE + stableRules(rules)).slice(0, 12);
 
 if (!validatorOk) {
   // Failed runs are archived too — meta + report, no data block (§4).
@@ -155,8 +162,8 @@ if (!validatorOk) {
 }
 
 // 3. SKIP-CHECK — workbook sha AND rules map, never totals.
-if (lastMeta && lastMeta.workbook_sha256 === wbSha && stableRules(lastMeta.rules) === stableRules(rules)) {
-  console.log(`\nSKIP PUBLISH — workbook (${wbSha.slice(0, 8)}) and rules map both unchanged since last publish (${lastMeta.reference_date}).`);
+if (lastMeta && lastMeta.content_sha256 === contentSha && stableRules(lastMeta.rules) === stableRules(rules)) {
+  console.log(`\nSKIP PUBLISH — workbook content (${contentSha.slice(0, 8)}) and rules map both unchanged since last publish (${lastMeta.reference_date}).`);
   process.exit(0);
 }
 
@@ -188,13 +195,13 @@ renameSync(`${SITE}/data/data.json.tmp`, `${SITE}/data/data.json`);
 // what persists the pair to the branch, from these cache files).
 copyFileSync(WB, `${STATE}/last-published.xlsx`);
 writeFsync(`${STATE}/last-published-meta.json`, JSON.stringify({
-  workbook_sha256: wbSha, rules, reference_date: REF_DATE,
+  workbook_sha256: wbSha, content_sha256: contentSha, rules, reference_date: REF_DATE,
   generated_at: artefact.meta.generated_at, archive_key: archiveKey,
 }, null, 2));
 // Marker for the archive job: exists only when THIS run published (skip and
 // failure paths never reach here), so the branch is pushed exactly when the
 // baseline moved.
-writeFsync(`${STATE}/publish-happened`, JSON.stringify({ workbook_sha256: wbSha, archive_key: archiveKey, reference_date: REF_DATE }));
+writeFsync(`${STATE}/publish-happened`, JSON.stringify({ workbook_sha256: wbSha, content_sha256: contentSha, archive_key: archiveKey, reference_date: REF_DATE }));
 
 const v = artefact.meta.validator;
 console.log(`\nPUBLISHED ${SITE}/data/data.json — workbook ${wbSha.slice(0, 8)} · ${v.error}E/${v.warn}W/${v.info}I · archive data-${archiveKey}.json`);

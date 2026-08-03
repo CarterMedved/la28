@@ -20,6 +20,7 @@
 import XLSX from "xlsx";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 const root = new URL("..", import.meta.url).pathname;
 const SRC = root + "data/LA28_Qualification_Database.xlsx";
@@ -297,6 +298,33 @@ const mutant = (name, fn) => {
   check("empty branch dir falls through to the state cache (source line says state cache)",
     r3.code === 0 && /baseline source: state cache/.test(r3.out) && /SKIP PUBLISH/.test(r3.out),
     r3.out.slice(0, 300));
+}
+
+// Dual-hash: a byte-DIFFERENT but content-IDENTICAL workbook (the measured
+// behaviour of Google's export) must SKIP, not republish — content drives
+// identity; raw bytes keep only the baseline integrity job.
+{
+  const S = DIR + "bootstrap-test/";
+  const tmp = DIR + "rezip-tmp", variant = DIR + "v21-rezip.xlsx";
+  execFileSync("rm", ["-rf", tmp, variant]);
+  mkdirSync(tmp, { recursive: true });
+  execFileSync("unzip", ["-q", root + "data/LA28_Qualification_Database_v21.xlsx", "-d", tmp]);
+  execFileSync("zip", ["-q", "-r", "-X", "-9", variant, "."], { cwd: tmp });
+  const sha = p => createHash("sha256").update(readFileSync(p)).digest("hex");
+  const bytesDiffer = sha(variant) !== sha(root + "data/LA28_Qualification_Database_v21.xlsx");
+  let r;
+  try {
+    r = { code: 0, out: execFileSync("node", [root + "tools/ci-publish.mjs",
+      "--workbook", variant, "--site", S + "site", "--state", S + "state",
+      "--reference-date", "2026-08-03", "--acks", DIR + "no-acks.json"], { stdio: "pipe" }).toString() };
+  } catch (e) { r = { code: e.status, out: (e.stdout ?? "").toString() + (e.stderr ?? "").toString() }; }
+  check("byte-different content-identical workbook SKIPS (dual-hash: content is the identity)",
+    bytesDiffer && r.code === 0 && /SKIP PUBLISH — workbook content/.test(r.out),
+    `bytesDiffer=${bytesDiffer} exit=${r.code}: ${r.out.slice(0, 300)}`);
+  const meta = JSON.parse(readFileSync(S + "state/last-published-meta.json", "utf8"));
+  check("baseline meta records BOTH hashes (raw for integrity, content for identity)",
+    /^[0-9a-f]{64}$/.test(meta.workbook_sha256) && /^[0-9a-f]{64}$/.test(meta.content_sha256)
+      && meta.workbook_sha256 !== meta.content_sha256);
 }
 
 // 12. The pull fails closed on missing configuration (exit 2, publishes nothing).

@@ -64,6 +64,9 @@ const rawB = artefact.data;
 check("data._sentinel present inside the payload", rawB._sentinel === SENTINEL);
 check("meta.schema_version = 1", artefact.meta.schema_version === 1);
 check("meta.workbook.sha256 is a 64-char hex", /^[0-9a-f]{64}$/.test(artefact.meta.workbook.sha256));
+check("meta.workbook.content_sha256 present (dual-hash: content identity, distinct from raw bytes)",
+  /^[0-9a-f]{64}$/.test(artefact.meta.workbook.content_sha256)
+    && artefact.meta.workbook.content_sha256 !== artefact.meta.workbook.sha256);
 check("rows serialize without the RAW view (Symbol dropped by JSON)",
   !JSON.stringify(rawB).includes("Symbol") && Object.getOwnPropertySymbols(rawB.links[0] ?? {}).length === 0);
 for (const k of Object.keys(rawA))
