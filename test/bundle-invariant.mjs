@@ -51,7 +51,7 @@ check("app source does not contain the sentinel literal (shape-validates instead
 
 // ---- 2. the violation fixture: meta-less, tree-shaken import ----
 mkdirSync(root + "test/.build/artefact", { recursive: true });
-const artefact = emit(root + "data/LA28_Qualification_Database_v21.xlsx");
+const artefact = emit(root + "data/LA28_Qualification_Database_v22.xlsx");
 writeFileSync(root + "test/.build/artefact/data.json", JSON.stringify(artefact));
 writeFileSync(root + "test/.build/violation-entry.mjs",
   `// DELIBERATE VIOLATION (test-only): the named import drops meta via JSON\n` +

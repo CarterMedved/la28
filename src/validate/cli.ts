@@ -15,7 +15,7 @@ import { referential } from "./rules/referential.ts";
 import { arithmetic, qualifiedFill } from "./rules/arithmetic.ts";
 import { statusWindow, standingsStates, duplicateRanks, appliesToBinds, confirmedPlaceholderDates, completedWithoutOutcome, storedQualificationShadowed, tzProvenance } from "./rules/state.ts";
 import { cutLineDepth, staleStandings, pastFixturesNoResult, undatedFixtures, tzUndeclared, unlinkedCompetitions, blankConfederation, duplicateFixtures, fixturesBeforeStart, missingEarlierRounds, placeholderFixtures, roundRobinIncomplete, namedContinentsDeclared, poolPreview } from "./rules/coverage.ts";
-import { hygiene, notesSmell } from "./rules/hygiene.ts";
+import { hygiene, notesSmell, formulaCellsRule } from "./rules/hygiene.ts";
 import { dayOf } from "../lib/load.ts";
 
 // --- args ---
@@ -51,7 +51,7 @@ const ds = loadWorkbook(workbookPath);
 const ctx: RuleContext = { ds, refDate, sentinels: new Set(sentinelsCfg.sentinels.map(s => s.id)) };
 const rules = [referential, arithmetic, qualifiedFill, statusWindow, standingsStates, duplicateRanks, appliesToBinds, confirmedPlaceholderDates, completedWithoutOutcome, storedQualificationShadowed, tzProvenance,
                cutLineDepth, staleStandings, pastFixturesNoResult, undatedFixtures, tzUndeclared, unlinkedCompetitions, blankConfederation, duplicateFixtures,
-               fixturesBeforeStart, missingEarlierRounds, placeholderFixtures, roundRobinIncomplete, namedContinentsDeclared, poolPreview, hygiene, notesSmell];
+               fixturesBeforeStart, missingEarlierRounds, placeholderFixtures, roundRobinIncomplete, namedContinentsDeclared, poolPreview, hygiene, notesSmell, formulaCellsRule];
 const all: Finding[] = rules.flatMap(r => r(ctx));
 
 const suppressedKeys = new Map(knownIssues.issues.map(i => [i.key, i.note]));

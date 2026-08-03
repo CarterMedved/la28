@@ -237,7 +237,14 @@ entered. Recorded on the competition's notes.)*
   (fork-PR secret theft on public repos); main's ruleset blocks force-push/deletion WITHOUT
   required PRs — deliberate, don't "fix" it. Still open: provisioning (service account, two
   secrets, Pages source, two rulesets) and the first real run; the workflow stays
-  `.disabled` until deliberately renamed.
+  `.disabled` until deliberately renamed. Workbook at v22 (4 Aug 2026): the three formula
+  self-check columns are DELETED (461 cells — the Sheets upload recalculated them with
+  drifted row references; every check's intent was already a tested validator rule) and
+  `hygiene/formula-cells` (ERROR) keeps the workbook formula-free. Identity is DUAL-HASH:
+  content_sha256 drives skip/archive-key/bootstrap, raw sha only baseline integrity —
+  Google's export is byte-unstable on unchanged content (measured; it re-serialises the
+  XML, so differing CRCs/XML sizes between exports are BY DESIGN, not corruption). Preflight
+  comparisons are CELL VALUES + NUMBER FORMATS, never zip structure (docs/provisioning.md).
 - **toStamp single-digit hours (fixed 3 Aug 2026).** Until then the app's date parser dropped
   the time of every fixture with an hour 0–9 (47 rows — the cricket 00:30s and Africa-window
   08:00s), rendering "no time recorded"; `docs/timezones.md` records why that invites re-entry

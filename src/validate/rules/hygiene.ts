@@ -108,3 +108,27 @@ export const hygiene: Rule = ({ ds }) => {
 
   return out;
 };
+
+/**
+ * No formulas in the published workbook (docs/stage-four.md, 4 Aug 2026):
+ * a Google Sheet RECALCULATES on import, so any formula is live data that
+ * mutates outside the gate — the sheet stores declared facts, code derives
+ * everything else. Measured on v21's upload: 461 formula cells in three
+ * self-check columns, 288 with silently drifted row references, 238
+ * evaluating "OK" against the WRONG row. Their intents were already
+ * covered by tested rules (referential/fixtures-competition_id,
+ * referential/links-from_id/-to_id, arithmetic/berth-sum). ERROR,
+ * aggregate: one formula anywhere makes the workbook unfit to publish.
+ */
+export const formulaCellsRule: Rule = ({ ds }) => {
+  if (!ds.formulaCells?.length) return [];
+  const byTab: Record<string, string[]> = {};
+  for (const f of ds.formulaCells) (byTab[f.tab] ||= []).push(f.cell);
+  const lines = Object.entries(byTab).map(([t, cells]) =>
+    `${t}: ${cells.length} (${cells.slice(0, 5).join(", ")}${cells.length > 5 ? ", …" : ""})`);
+  const sample = ds.formulaCells[0];
+  return [finding("ERROR", "hygiene/formula-cells", sample.tab, "(aggregate)",
+    `${ds.formulaCells.length} formula cell(s) in the workbook. A Sheet recalculates on import — formulas are ` +
+    `live data mutating outside the gate; store declared facts, derive in the validator (docs/stage-four.md). ` +
+    `Delete them (e.g. [${sample.cell}]=${sample.formula.slice(0, 60)}):\n      ${lines.join("\n      ")}`)];
+};

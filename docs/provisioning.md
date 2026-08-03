@@ -42,20 +42,25 @@ From the new Sheet: **File → Download → Microsoft Excel (.xlsx)**, save as
    → must print **EXACT MATCH** with 0 observed changes. Anything else:
    STOP and enumerate every listed difference to the owner — the list, not
    a verdict. Import fidelity problems get fixed before CI exists.
-4. **Export byte-stability**: without touching the Sheet, download the
-   xlsx a SECOND time as `preflight-2.xlsx`, then
-   `shasum -a 256 preflight-1.xlsx preflight-2.xlsx`.
-   **MEASURED 4 Aug 2026: DIFFERENT** (120,570 vs 120,615 bytes, zero
-   differing cells) — Google's export is byte-unstable, content-stable.
-   **The dual-hash is therefore implemented**: `content_sha256` (sha256
-   of the normalised data block, exactly what data.json carries) drives
-   the SKIP decision, the archive key and the bootstrap digest;
-   `workbook_sha256` (raw bytes) keeps its one job, the baseline
-   integrity check, whose two sides come from the same stored bytes and
-   never cross an export boundary. Proven against a byte-variant
-   container in `test/ci-gate.mjs`. This step stays in the preflight as a
-   regression sentinel: if TWO exports ever differ at the CELL level,
-   that is a new Google behaviour — stop and investigate.
+4. **Double-export comparison — CELL VALUES and NUMBER FORMATS, never
+   zip structure.** Without touching the Sheet, download the xlsx a
+   SECOND time as `preflight-2.xlsx`. Then compare the two exports at
+   the level that matters: **every cell value identical across all nine
+   tabs, and every number format identical** (Fixtures.date must read
+   `yyyy-mm-dd h:mm:ss` in both — the toStamp bug came from a number
+   format, so formats ARE content here).
+   **MEASURED 4 Aug 2026, and the byte delta is NOT compression or
+   mtimes:** Google RE-SERIALISES the sheet XML between exports — 11 zip
+   entries had different CRC-32s and 9 had different uncompressed XML
+   sizes (deltas both directions, net −45 bytes) with zero differing
+   cells and zero differing formats. **A future session must not read
+   differing CRCs or raw XML sizes as corruption — they differ by
+   design.** The two file sha256s differing is what makes the dual-hash
+   NECESSARY (content_sha256 drives skip/archive-key/bootstrap; raw
+   workbook_sha256 keeps only baseline integrity — implemented, proven
+   in `test/ci-gate.mjs`); the sha256s are the trigger for that design,
+   never the diagnosis of a problem. Stop and investigate only if the
+   CELL-VALUE or NUMBER-FORMAT comparison differs.
 
 5. **No formulas** (general rule, measured the hard way — see
    docs/stage-four.md): a Sheet RECALCULATES on import, so any formula in

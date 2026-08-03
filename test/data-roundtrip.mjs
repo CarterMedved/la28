@@ -22,7 +22,7 @@ import { emit, SENTINEL } from "../tools/emit-data.mjs";
 const root = new URL("..", import.meta.url).pathname;
 const argv = process.argv.slice(2);
 const CI = argv.includes("--ci");
-const WB = argv.find(a => !a.startsWith("--")) ?? root + "data/LA28_Qualification_Database_v21.xlsx";
+const WB = argv.find(a => !a.startsWith("--")) ?? root + "data/LA28_Qualification_Database_v22.xlsx";
 if (CI) console.log("(--ci: v19 census pins run as both-paths-identical checks)");
 
 await build({
@@ -67,6 +67,8 @@ check("meta.workbook.sha256 is a 64-char hex", /^[0-9a-f]{64}$/.test(artefact.me
 check("meta.workbook.content_sha256 present (dual-hash: content identity, distinct from raw bytes)",
   /^[0-9a-f]{64}$/.test(artefact.meta.workbook.content_sha256)
     && artefact.meta.workbook.content_sha256 !== artefact.meta.workbook.sha256);
+check("artefact carries no formula self-check columns (berth_check/check deleted in v22, kept out forever)",
+  !JSON.stringify(rawB).includes("berth_check") && !/"check":/.test(JSON.stringify(rawB)));
 check("rows serialize without the RAW view (Symbol dropped by JSON)",
   !JSON.stringify(rawB).includes("Symbol") && Object.getOwnPropertySymbols(rawB.links[0] ?? {}).length === 0);
 for (const k of Object.keys(rawA))

@@ -59,6 +59,15 @@ export interface Dataset {
   events: Row[]; comps: Row[]; links: Row[];
   rank: Row[]; standings: Row[]; cuts: Row[]; fixtures: Row[]; qualified: Row[];
   sheetNameOf: Record<TabKey, string>;
+  /**
+   * Every formula cell in the workbook, by tab and address. The row values
+   * above are RENDERED (raw:false) and cannot see formulas; SheetJS retains
+   * cell.f on the parsed sheets, surfaced here for hygiene/formula-cells —
+   * a Google Sheet recalculates on import, so a formula is live data
+   * mutating outside the gate (docs/stage-four.md). Never serialised into
+   * the artefact: emit's dataBlock and contentSha256 read only the tab rows.
+   */
+  formulaCells: { tab: string; cell: string; formula: string }[];
 }
 
 export function loadWorkbook(path: string): Dataset {
@@ -87,5 +96,12 @@ export function loadWorkbook(path: string): Dataset {
   const eventIds = new Set(out.events.map(e => String(e.olympic_event_id)).filter(s => s !== "null"));
   out.standings = deriveQualification(out.standings, out.qualified, out.rank, eventIds);
 
-  return { ...out, sheetNameOf };
+  const formulaCells: Dataset["formulaCells"] = [];
+  for (const name of wb.SheetNames) {
+    const sheet = wb.Sheets[name] as Record<string, { f?: string }>;
+    for (const addr of Object.keys(sheet))
+      if (addr[0] !== "!" && sheet[addr].f) formulaCells.push({ tab: name, cell: addr, formula: sheet[addr].f! });
+  }
+
+  return { ...out, sheetNameOf, formulaCells };
 }

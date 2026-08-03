@@ -513,7 +513,7 @@ console.log("\nTOP_N_OF_POOL semantics (v13):");
 // Pool-preview arithmetic (v20: declared teams_count, conditional edges stated).
 console.log("\npool-preview arithmetic (v20):");
 {
-  const vNow = runValidator(root + "data/LA28_Qualification_Database_v21.xlsx");
+  const vNow = runValidator(root + "data/LA28_Qualification_Database_v22.xlsx");
   const pool = vNow.findings.find(f => f.rule === "coverage/pool-preview" && f.severity === "INFO");
   const okN = pool && /60 distinct second-round teams/.test(pool.message) && /28 of them miss it/.test(pool.message);
   console.log(`  ${okN ? "PASS" : "FAIL"}  WC edge (unconditional): 60 second-round teams, 28 miss the 32-team field`);
@@ -676,10 +676,29 @@ console.log("\ntz provenance enum (state/tz-*):");
   if (!dOK) failures++;
   const e = build("tzp-orphan", null, "DERIVED (test): a marker describing no value");
   check("tz_source without tz (dangling marker)", e.report, "state/tz-source-orphaned", "WARN", e.id);
-  const v21r = runValidator(root + "data/LA28_Qualification_Database_v21.xlsx");
-  const fOK = !v21r.findings.some(f => f.rule.startsWith("state/tz-"));
-  console.log(`  ${fOK ? "PASS" : "FAIL"}  v21 clean: twelve DERIVED rows comply, 137 blank/blank rows silent`);
+  const vCur = runValidator(root + "data/LA28_Qualification_Database_v22.xlsx");
+  const fOK = !vCur.findings.some(f => f.rule.startsWith("state/tz-"));
+  console.log(`  ${fOK ? "PASS" : "FAIL"}  current workbook clean: twelve DERIVED rows comply, 137 blank/blank rows silent`);
   if (!fOK) failures++;
+}
+
+// --- hygiene/formula-cells (v22): both directions. A Sheet recalculates on
+// import, so one formula anywhere = unfit to publish; v22 (the deletion
+// pass) must be formula-free. Mutants are formula-free by construction
+// (readAoA reads rendered values), so the fire direction injects one. ---
+console.log("\nformula cells (hygiene/formula-cells):");
+{
+  const aoa = readAoA();
+  const wb2 = XLSX.utils.book_new();
+  for (const [n, rows] of Object.entries(aoa)) XLSX.utils.book_append_sheet(wb2, XLSX.utils.aoa_to_sheet(rows), n);
+  wb2.Sheets["Fixtures"]["B2"].f = 'CONCATENATE(A2,"")';
+  const p = MUT + "formula-cell.xlsx";
+  XLSX.writeFile(wb2, p);
+  check("a single formula cell anywhere in the workbook", runValidator(p), "hygiene/formula-cells", "ERROR", null);
+  const v22r = runValidator(root + "data/LA28_Qualification_Database_v22.xlsx");
+  const ok = !v22r.findings.some(f => f.rule === "hygiene/formula-cells");
+  console.log(`  ${ok ? "PASS" : "FAIL"}  v22 is formula-free (rule silent after the deletion pass)`);
+  if (!ok) failures++;
 }
 
 console.log("\nSuppression mechanics:");

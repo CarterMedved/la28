@@ -177,7 +177,7 @@ assert(rendered["pathway"].includes("load path unrecorded"),
 //    the viewer could mis-zone must not exist.
 console.log("\ntz display assertions (v20 workbook):");
 {
-  const ds20 = loadWorkbook(root + "data/LA28_Qualification_Database_v21.xlsx");
+  const ds20 = loadWorkbook(root + "data/LA28_Qualification_Database_v22.xlsx");
   const raw20 = { events: strip(ds20.events), comps: strip(ds20.comps), links: strip(ds20.links),
                   rank: strip(ds20.rank), standings: strip(ds20.standings), cuts: strip(ds20.cuts),
                   fixtures: strip(ds20.fixtures), qualified: strip(ds20.qualified) };

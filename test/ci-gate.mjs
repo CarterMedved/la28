@@ -171,7 +171,7 @@ const mutant = (name, fn) => {
 {
   const S = DIR + "bootstrap-test/";
   const publishArgv = acks => [root + "tools/ci-publish.mjs",
-    "--workbook", root + "data/LA28_Qualification_Database_v21.xlsx",
+    "--workbook", root + "data/LA28_Qualification_Database_v22.xlsx",
     "--site", S + "site", "--state", S + "state",
     "--reference-date", "2026-08-03", "--acks", acks];
   const runPub = acks => {
@@ -236,7 +236,7 @@ const mutant = (name, fn) => {
   const runPub = () => {
     try {
       return { code: 0, out: execFileSync("node", [root + "tools/ci-publish.mjs",
-        "--workbook", root + "data/LA28_Qualification_Database_v21.xlsx",
+        "--workbook", root + "data/LA28_Qualification_Database_v22.xlsx",
         "--site", S + "site", "--state", S + "state",
         "--reference-date", "2026-08-03", "--acks", DIR + "no-acks.json"], { stdio: "pipe" }).toString() };
     } catch (e) { return { code: e.status, out: (e.stdout ?? "").toString() + (e.stderr ?? "").toString() }; }
@@ -267,7 +267,7 @@ const mutant = (name, fn) => {
   const S = DIR + "bootstrap-test/";           // valid baseline pair lives in S/state after the tests above
   const run = (stateDir, branchDir) => {
     const argv = [root + "tools/ci-publish.mjs",
-      "--workbook", root + "data/LA28_Qualification_Database_v21.xlsx",
+      "--workbook", root + "data/LA28_Qualification_Database_v22.xlsx",
       "--site", S + "site", "--state", stateDir,
       "--reference-date", "2026-08-03", "--acks", DIR + "no-acks.json"];
     if (branchDir) argv.push("--branch-baseline", branchDir);
@@ -308,10 +308,10 @@ const mutant = (name, fn) => {
   const tmp = DIR + "rezip-tmp", variant = DIR + "v21-rezip.xlsx";
   execFileSync("rm", ["-rf", tmp, variant]);
   mkdirSync(tmp, { recursive: true });
-  execFileSync("unzip", ["-q", root + "data/LA28_Qualification_Database_v21.xlsx", "-d", tmp]);
+  execFileSync("unzip", ["-q", root + "data/LA28_Qualification_Database_v22.xlsx", "-d", tmp]);
   execFileSync("zip", ["-q", "-r", "-X", "-9", variant, "."], { cwd: tmp });
   const sha = p => createHash("sha256").update(readFileSync(p)).digest("hex");
-  const bytesDiffer = sha(variant) !== sha(root + "data/LA28_Qualification_Database_v21.xlsx");
+  const bytesDiffer = sha(variant) !== sha(root + "data/LA28_Qualification_Database_v22.xlsx");
   let r;
   try {
     r = { code: 0, out: execFileSync("node", [root + "tools/ci-publish.mjs",
