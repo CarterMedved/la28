@@ -1,4 +1,10 @@
 {
-  "_readme": "Acknowledgments for gated workbook changes (docs/stage-four.md §2). Append-only, no expiry. Each entry: {digest, note, date}. The digest covers sheet·key·col·kind + OLD value + new value of every gated change in the pull — the failing CI run prints the digest and the enumerated changes to acknowledge.",
-  "acks": []
+  "_readme": "Acknowledgments for gated workbook changes (docs/stage-four.md §2). Append-only, no expiry. Each entry: {digest, note, date}. The digest covers sheet·key·col·kind + OLD value + new value of every gated change in the pull — the failing CI run prints the digest and the enumerated changes to acknowledge. The date is the acknowledged RUN's log timestamp (UTC date), never a guessed or local-clock date.",
+  "acks": [
+    {
+      "digest": "8d9474770bf4e74cf071b478851627fb526c60cea9d4f0774cbbc7838e20dd67",
+      "note": "bootstrap: first publish — no prior baseline exists; content 267ee72d verified against both preflight exports",
+      "date": "2026-08-03"
+    }
+  ]
 }
