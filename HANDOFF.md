@@ -165,6 +165,12 @@ Pull exit codes: 2 config · 3 token refused · 4 export/not-xlsx · 5 cannot wr
 (any unexpected throw still names a cause and prints the artefact-stands line — never a raw
 stack).
 
+The rehearsal also proves THE SITE (step 4): the workflow's `build-site` step bundles the app
+(`tools/build-site.mjs`, the same exported build the bundle-invariant harness scans), and the
+rehearsal serves the published tree under the `/la28/` Pages base and walks page → script →
+artefact fetch over real HTTP, then proves an app-only change still republishes (the shell
+sha256 is part of ci-publish's SKIP decision). Run it before pushing app changes too.
+
 **Suppression discipline:** `known-issues.json` entries need a note saying what would clear
 them. Remove entries the moment they resolve; a stale suppression is worse than none.
 

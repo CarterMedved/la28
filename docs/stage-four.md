@@ -9,10 +9,23 @@ strip + audit artefact block (proven in `test/render-app.mjs`). Repo is
 PUBLIC on GitHub (CarterMedved/la28, decision 3 Aug 2026 — see PLAN
 BOUNDARY in §2); archive job built 3 Aug 2026 (two-job split in
 `publish.yml.disabled`, branch-baseline preference in `ci-publish.mjs`,
-proven in `test/ci-gate.mjs`). OPEN: provisioning and the first real
-run — runbook with BLOCKING Sheets preflight in `docs/provisioning.md`;
-the workflow stays `.disabled` until deliberately renamed; no CI has ever
-run.*
+proven in `test/ci-gate.mjs`). LIVE since 3 Aug 2026: provisioning done
+(runbook `docs/provisioning.md`), workflow enabled, bootstrap acked
+(digest binds content 267ee72d), runs publish/skip/archive as designed.
+SITE SHIPPED 3 Aug 2026: `tools/build-site.mjs` (one exported build —
+workflow, bundle-invariant harness and rehearsal all call it) bundles
+`site-entry.jsx` → `qualification-app.jsx` with real react/xlsx/papaparse
+into `site/app.js` + `index.html`, built every run before the chain;
+`ci-publish` folds the shell sha256 into the SKIP decision (content+rules
+alone would skip an app-only change forever and the new shell would never
+deploy) and records it as `site_shell_sha256` in the baseline meta. All
+asset/fetch paths are RELATIVE — the site lives under the `/la28/` Pages
+base, and `test/ci-rehearsal.mjs` serves the built tree under that base
+and walks every hop (page → script → artefact fetch) over real HTTP. The
+provenance strip falls back to `content <sha12>` where the CI artefact's
+`version_label` is null (the pull writes pulled.xlsx; content IS the
+identity there), and a failed artefact fetch states its reason above the
+Loader — a visitor never gets a bare file picker.*
 
 ## 1. The invariant that must survive
 
