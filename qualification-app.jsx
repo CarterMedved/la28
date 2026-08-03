@@ -198,12 +198,21 @@ async function fetchGoogleSheet(urlOrId) {
  * (reference_date) and generated_at are shown as a pair: as-of alone cannot
  * distinguish "the sheet hasn't changed" from "the pipeline died".
  */
+/**
+ * Workbook label for provenance surfaces. The CI pipeline pulls to
+ * pulled.xlsx, so the published meta has version_label: null — the content
+ * hash IS the workbook's identity there (it drives skip/archive/bootstrap),
+ * and rendering it beats rendering a null.
+ */
+const wbLabel = w => w?.version_label
+  ?? (w?.content_sha256 ? `content ${w.content_sha256.slice(0, 12)}` : "?");
+
 function Provenance({ meta }) {
   const a = meta?.artefact, v = a?.validator;
   const day = t => (t ? String(t).slice(0, 10) : null);
   let body;
   if (meta?.loadPath === "artefact" && a) {
-    body = <>published artefact · workbook {a.workbook?.version_label ?? "?"}
+    body = <>published artefact · workbook {wbLabel(a.workbook)}
       {a.workbook?.sha256 ? ` (${a.workbook.sha256.slice(0, 8)})` : ""} · as of {a.reference_date ?? "?"} ·
       generated {a.generated_at ?? "?"} · validator {v
         ? `${v.error}E/${v.warn}W/${v.info}I${v.suppressed ? ` (+${v.suppressed} suppressed)` : ""}`
@@ -1424,7 +1433,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           );
           return (
             <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "14px 17px" }}>
-              <ARow k="workbook" val={`${a.workbook?.version_label ?? "?"} · sha ${(a.workbook?.sha256 ?? "").slice(0, 12) || "?"}`} />
+              <ARow k="workbook" val={`${wbLabel(a.workbook)} · sha ${(a.workbook?.sha256 ?? "").slice(0, 12) || "?"}`} />
               <ARow k="as of (validator clock)" val={a.reference_date ?? "—"} />
               <ARow k="generated" val={a.generated_at ?? "—"} />
               <ARow k="fit to publish" val={String(v?.fit_to_publish ?? "unknown")} />
@@ -1559,7 +1568,7 @@ function Problems({ list, compact }) {
   );
 }
 
-function Loader({ onLoad, busy, error, problems }) {
+function Loader({ onLoad, busy, error, problems, notice }) {
   const [url, setUrl] = useState("");
   const [drag, setDrag] = useState(false);
   const fileRef = useRef(null);
@@ -1589,6 +1598,15 @@ function Loader({ onLoad, busy, error, problems }) {
           Everything is read from your workbook at run time — no data is compiled into this page.
           Edit the sheet, reload, and every pathway, cut-line and verdict recomputes.
         </p>
+
+        {notice && (
+          <div style={{ margin: "0 0 16px", padding: "11px 13px", background: C.card,
+            borderLeft: `2px solid ${C.brass}`, borderRadius: "0 3px 3px 0",
+            font: `400 12.5px/1.55 ${SANS}`, color: C.ink }}>
+            {notice} The pipeline publishes daily — the published view may return on its own.
+            You can still load a workbook below.
+          </div>
+        )}
 
         <div
           onDragOver={e => { e.preventDefault(); setDrag(true); }}
@@ -1651,6 +1669,10 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [restoring, setRestoring] = useState(true);
+  // Why the published artefact didn't load, if it didn't. A visitor with no
+  // workbook must see a stated reason, never a bare file picker (the
+  // drag-drop Loader is the dev path; on the site it is the FALLBACK).
+  const [notice, setNotice] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -1678,22 +1700,33 @@ export default function App() {
       try {
         if (typeof fetch === "function") {
           const res = await fetch("data/data.json", { cache: "no-store" });
-          if (res.ok) {
+          if (!res.ok) {
+            setNotice(`The published artefact could not be loaded (data/data.json — HTTP ${res.status}).`);
+          } else {
             const j = await res.json();
-            if (j?.meta?.schema_version === 1 && j?.data && Array.isArray(j.data.events)) {
+            if (!(j?.meta?.schema_version === 1 && j?.data && Array.isArray(j.data.events))) {
+              setNotice("The published artefact was fetched but has an unexpected shape — refusing to render it.");
+            } else {
               const { data: norm_, problems: probs } = normalise(j.data);
               if (norm_) {
-                setMeta({ source: `data.json · workbook ${j.meta.workbook?.version_label ?? "?"}`,
+                setMeta({ source: `data.json · workbook ${wbLabel(j.meta.workbook)}`,
                   loadedAt: new Date().toISOString(), loadPath: "artefact", artefact: j.meta,
                   counts: { events: norm_.events.length, comps: norm_.comps.length, links: norm_.links.length,
                             rank: norm_.rank.length, standings: norm_.standings.length, cuts: norm_.cuts.length,
                             fixtures: norm_.fx.length } });
                 setData(norm_); setProblems(probs);
-              } else setProblems(probs);
+              } else {
+                setProblems(probs);
+                setNotice("The published artefact was fetched but failed normalisation — details below.");
+              }
             }
           }
         }
-      } catch { /* no artefact where we're running — the Loader takes over */ }
+      } catch (e) {
+        // No artefact where we're running (dev file://, offline, outage) —
+        // the Loader takes over, with the reason stated.
+        setNotice(`The published artefact could not be reached (${e?.message ?? "fetch failed"}).`);
+      }
       setRestoring(false);
     })();
   }, []);
@@ -1733,7 +1766,7 @@ export default function App() {
     <div style={{ background: C.paper, minHeight: "100vh", display: "grid", placeItems: "center",
       font: `400 13px ${MONO}`, color: C.muted }}>loading…</div>
   );
-  if (!data) return <Loader onLoad={load} busy={busy} error={error} problems={problems} />;
+  if (!data) return <Loader onLoad={load} busy={busy} error={error} problems={problems} notice={notice} />;
   return <Explorer data={data} meta={meta} problems={problems} onReset={reset} onLoad={load} busy={busy} />;
 }
 
