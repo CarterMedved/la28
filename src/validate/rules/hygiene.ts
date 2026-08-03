@@ -120,6 +120,44 @@ export const hygiene: Rule = ({ ds }) => {
  * referential/links-from_id/-to_id, arithmetic/berth-sum). ERROR,
  * aggregate: one formula anywhere makes the workbook unfit to publish.
  */
+/**
+ * Best-effort net for the stale-prose failure (cri-007 said "ranked 20th"
+ * while Standings said 19 and the app derived 19): a rank ordinal or a
+ * rating margin typed into prose duplicates Standings and goes stale
+ * silently. Fields carrying a DATED ANCHOR ("On the 25 Jul 2026 table…",
+ * "13th on 30 Jun") are exempt — a snapshot that states its own staleness
+ * is the approved pattern (cri-001). Rule constants ("top 15", "rank 15 or
+ * better") are deliberately NOT matched: the net is ordinals plus
+ * "N rating point(s)" (digits or words), which is why this is best-effort,
+ * never proof of cleanliness. WARN, aggregate.
+ */
+export const proseUnanchoredSnapshot: Rule = ({ ds }) => {
+  const ORD = /\b\d{1,2}(?:st|nd|rd|th)\b/g;
+  const RATING = /\b(?:\d+|(?:twenty|thirty|forty|fifty)(?:-\w+)?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)\s+rating\s+points?\b/gi;
+  const ANCHOR = /\bon\s+(?:the\s+)?\d{1,2}\s+[A-Za-z]{3,9}(?:\s+\d{4})?\b/i;
+  const FIELDS: [keyof typeof idOf, Row[], string[]][] = [
+    ["links", ds.links, ["criterion", "eligibility_note", "entry_condition", "berth_math", "qualifiers_note", "notes"]],
+    ["cuts", ds.cuts, ["name", "label", "notes"]],
+    ["qualified", ds.qualified, ["notes"]],
+  ];
+  const hits: string[] = [];
+  for (const [tab, rows, cols] of FIELDS)
+    for (const row of rows)
+      for (const c of cols) {
+        const v = (row as Record<string, unknown>)[c];
+        if (v == null || typeof v !== "string") continue;
+        if (ANCHOR.test(v)) continue;
+        const found = [...v.matchAll(ORD), ...v.matchAll(RATING)].map(m => m[0]);
+        if (found.length) hits.push(`${String(idOf[tab](row as never))}·${c}: [${found.join(", ")}]`);
+      }
+  if (!hits.length) return [];
+  return [finding("WARN", "hygiene/prose-unanchored-snapshot", ds.sheetNameOf.links, "(aggregate)",
+    `${hits.length} prose field(s) carry a rank ordinal or rating margin with no dated anchor. A number typed ` +
+    `into prose duplicates Standings and goes stale silently (cri-007 said 20th while Standings said 19). ` +
+    `Either remove it (the app derives positions) or anchor it ("On the <date> table: …") so it states its own ` +
+    `staleness. Best-effort net — rule constants like "top 15" are not matched:\n      ${hits.join("\n      ")}`)];
+};
+
 export const formulaCellsRule: Rule = ({ ds }) => {
   if (!ds.formulaCells?.length) return [];
   const byTab: Record<string, string[]> = {};

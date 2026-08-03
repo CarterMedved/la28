@@ -730,5 +730,32 @@ try {
 console.log(`  ${noteRejected ? "PASS" : "FAIL"}  a suppression with an empty note is rejected`);
 if (!noteRejected) failures++;
 
+// --- hygiene/prose-unanchored-snapshot: both directions on marginal cells,
+// independent of whatever the baseline's own prose currently trips. ---
+console.log("\nprose-unanchored-snapshot (both directions):");
+{
+  const aoa = readAoA();
+  const cN = col(aoa, "Links", "notes"), cId = col(aoa, "Links", "link_id");
+  const r1 = aoa["Links"][1], r2 = aoa["Links"][2], r3 = aoa["Links"][3];
+  for (const r of [r1, r2, r3]) while (r.length <= cN) r.push(null);
+  r1[cN] = "They are ranked 5th, two rating points behind the leader.";           // unanchored → must fire
+  r2[cN] = "On the 25 Jul 2026 table they were ranked 5th — dated snapshot.";     // anchored → must be exempt
+  r3[cN] = "Must be inside the top 15 at the cut-off; the cut falls at rank 12."; // rule constants only → exempt
+  const p = MUT + "prose-snapshot.xlsx";
+  writeAoA(aoa, p);
+  const rep = runValidator(p);
+  const f = rep.findings.find(x => x.rule === "hygiene/prose-unanchored-snapshot");
+  const id1 = String(r1[cId]), id2 = String(r2[cId]), id3 = String(r3[cId]);
+  const ok1 = !!f && f.severity === "WARN" && f.message.includes(`${id1}·notes`);
+  console.log(`  ${ok1 ? "PASS" : "FAIL"}  unanchored ordinal + worded rating margin fires, naming the cell`);
+  if (!ok1) failures++;
+  const ok2 = !!f && !f.message.includes(`${id2}·notes`);
+  console.log(`  ${ok2 ? "PASS" : "FAIL"}  the same content behind a dated anchor is exempt`);
+  if (!ok2) failures++;
+  const ok3 = !!f && !f.message.includes(`${id3}·notes`);
+  console.log(`  ${ok3 ? "PASS" : "FAIL"}  a cell carrying only rule constants ("top 15", "rank 12") is not named`);
+  if (!ok3) failures++;
+}
+
 console.log(failures ? `\n${failures} negative test(s) FAILED` : "\nAll negative tests passed — every rule has been seen to fire.");
 process.exit(failures ? 1 : 0);

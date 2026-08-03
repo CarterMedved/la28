@@ -31,7 +31,9 @@ From the new Sheet: **File → Download → Microsoft Excel (.xlsx)**, save as
 1. **Validator**: `node src/validate/cli.ts preflight-1.xlsx
    --reference-date <today> --known-issues known-issues.json --sentinels
    sentinels.json` → must be 0 ERROR with the same WARN/INFO composition
-   as v22 (10 WARN · 2 INFO).
+   as a local run of the SAME validator version on the same workbook
+   (counts move when rules ship — compare like with like, never a pinned
+   number from a doc).
 2. **Round-trip**: `node test/data-roundtrip.mjs preflight-1.xlsx --ci` →
    all checks pass.
 3. **Cell-exact diff** — the check the first two cannot make (both pass on
