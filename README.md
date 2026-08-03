@@ -84,12 +84,17 @@ Tests (all must pass before trusting a change):
 > means the global 30-day clock applies.
 
 > **Fixtures.tz** — the IANA zone (e.g. `America/New_York`) that the stored
-> LOCAL kickoff time is in. A declaration, never a conversion: stored times
-> are transcribed from sources as local match times and must not be shifted.
-> Populate lazily, only from sources, where the time is load-bearing; blank
-> means "zone not yet sourced" and the validator WARNs on timed rows
+> kickoff time is in. A declaration, never a conversion: stored times are
+> transcribed exactly as each row's ENTRY SOURCE displayed them and must not
+> be shifted. **They are NOT venue-local match times** (measured 3 Aug 2026:
+> every timed row is consistent with US Eastern — the sources were US-facing
+> listings, cf. the Willow/Fubo/Sling broadcast column — and several are
+> impossible as venue-local, e.g. a Colombo match stored 00:30, Asian Games
+> in Japan stored 01:00). The pattern is not per-row proof: blank tz means
+> "zone UNVERIFIED for this row" and the validator WARNs on timed rows
 > (`coverage/tz-undeclared`) while the app shows "zone?" so a bare time can
-> never be mistaken for a zone the viewer assumes.
+> never be mistaken for a zone the viewer assumes. Populate lazily, only
+> from sources, where the time is load-bearing.
 > **tz_source is REQUIRED whenever tz is filled** (`state/tz-unsourced`,
 > ERROR — an unsourced zone is unauditable, indistinguishable from a
 > guess). It leads with stage_source's enum: `RESEARCHED` (the organiser's

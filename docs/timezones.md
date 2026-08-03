@@ -14,6 +14,26 @@ failure: a 5 Aug evening kickoff (CONCACAF U-20 QF) entered as 6 Aug because
 a source rendered it in UTC — a wrong DATE, not a wrong hour, which shifted
 the fixture across a day boundary and misdated the bracket.*
 
+**MEASURED CORRECTION (3 Aug 2026): stored times are NOT venue-local match
+times.** The convention text used to claim they were; the data falsifies it.
+Evidence, all internal to the workbook: fx-0026/0064/0073 (Sri Lanka v
+Pakistan IN SRI LANKA) store 00:30 — no cricket match starts at 00:30 local,
+but 00:30 US Eastern is 10:00 in Colombo, a routine start; the Asian Games
+women's fixtures (Japan, UTC+9) store 01:00 and 20:00 — impossible as local
+or UTC, but 14:00 and 09:00 next-day in Japan under Eastern; the West
+Indies-in-India series stores 09:30×5 — 19:00 IST under Eastern, the
+standard Indian evening start; the FWOPQT twelve are already documented as a
+-4h offset vs FIBA's listing (their tz_source premise); and the broadcast
+column names Willow/Fubo/Sling — US-facing sources. Every one of the 16
+timed competitions is consistent with **America/New_York**; none is
+consistent with venue-local throughout. The zone does NOT vary by row as far
+as measurement can tell — but consistency is not per-row verification, so:
+no stored time changes, the twelve declared values stand, tz stays lazy and
+source-only, and an undeclared timed row means "zone unverified (pattern
+says US Eastern), never "local time missing its label". What declaring all
+137 would actually assert is a per-row DERIVED inference nobody has checked
+row-by-row — that is why they stay blank.
+
 ## The problem
 
 `Fixtures.date` stores "exactly as entered with no zone" (handoff PART 7). A

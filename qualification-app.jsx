@@ -442,9 +442,11 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     const [day, time] = str.split(" ");
     return { day: day || "", time: time || "", known: !!time && time !== "00:00" };
   };
-  // Stored times are LOCAL match times (docs/timezones.md, option B). zone is
-  // Fixtures.tz — an IANA declaration of what zone the stored time is in,
-  // never a conversion. Three cases: declared → short zone name ("EDT");
+  // Stored times are as displayed by each row's ENTRY SOURCE — measured
+  // consistent with US Eastern throughout, NOT venue-local match times
+  // (docs/timezones.md, measured correction). zone is Fixtures.tz — an IANA
+  // declaration of what zone the stored time is in, never a conversion.
+  // Three cases: declared → short zone name ("EDT");
   // undeclared → "zone?" so a bare time can never be mistaken for a zone the
   // viewer assumes (the 5-vs-6 Aug re-entry hazard); no time → "TBC".
   const zoneAbbrev = (zone, day) => {

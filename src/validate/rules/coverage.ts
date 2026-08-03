@@ -270,10 +270,12 @@ export const tzUndeclared: Rule = ({ ds }) => {
     for (const f of bare) byComp[String(f.competition_id)] = (byComp[String(f.competition_id)] || 0) + 1;
     const lines = Object.entries(byComp).map(([c, n]) => `${c} (${n})`);
     out.push(finding("WARN", "coverage/tz-undeclared", ds.sheetNameOf.fixtures, "(aggregate)",
-      `${bare.length} fixtures carry a kickoff time but no declared zone (Fixtures.tz). Times are stored as ` +
-      `local match times; without tz the app must label them "zone?", and a bare time invites re-entry from a ` +
-      `source in another zone (docs/timezones.md). Populate tz (IANA name) from sources where the time is ` +
-      `load-bearing — declare, never convert:\n      ${lines.join("\n      ")}`));
+      `${bare.length} fixtures carry a kickoff time but no declared zone (Fixtures.tz). Stored times are as ` +
+      `displayed by each row's ENTRY SOURCE, not venue-local match times (measured 3 Aug 2026: every timed row ` +
+      `is consistent with America/New_York and several are impossible as venue-local or UTC — docs/timezones.md). ` +
+      `The pattern is not per-row proof: blank tz means the zone is UNVERIFIED for that row, the app labels it ` +
+      `"zone?", and a bare time invites re-entry from a source in another zone. Populate tz (IANA name) only ` +
+      `from sources where the time is load-bearing — declare, never convert:\n      ${lines.join("\n      ")}`));
   }
   for (const f of ds.fixtures) {
     if (f.tz == null) continue;
