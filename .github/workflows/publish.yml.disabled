@@ -102,10 +102,16 @@ jobs:
             .ci-state/last-published-meta.json
             .ci-state/publish-happened
             site/data/archive/
+      # Only a publishing run may touch the Pages deployment: a SKIP run
+      # exits 0 WITHOUT writing site/data/data.json, and deploying that
+      # near-empty tree would replace the live site — the last published
+      # artefact must stand on skip exactly as it does on failure.
       - uses: actions/upload-pages-artifact@v3
+        if: steps.outcome.outputs.published == 'true'
         with:
           path: site
       - uses: actions/deploy-pages@v4
+        if: steps.outcome.outputs.published == 'true'
 
   # Separate job, separate token: contents:write, NO secrets, runs only when
   # the publish job actually published (the marker file is written by
