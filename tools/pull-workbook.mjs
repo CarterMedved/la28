@@ -15,13 +15,21 @@
  * FAIL-CLOSED: every failure exits non-zero BEFORE the gate/emit/publish
  * chain runs, so a broken or revoked credential publishes nothing and the
  * last published artefact stands. Distinct exit codes:
- *   2 = missing/unparseable configuration
+ *   2 = missing/unparseable configuration (including a key that parses as
+ *       JSON but cannot sign — a truncated secret paste)
  *   3 = token exchange refused (key revoked, deleted, or clock-skewed)
- *   4 = export failed (sheet unshared, moved, deleted, or wrong id)
+ *   4 = export failed (sheet unshared, moved, deleted, or wrong id) or the
+ *       response is not an xlsx
+ *   5 = pulled bytes could not be written locally (missing out dir on a
+ *       fresh checkout, disk, permissions)
+ *   6 = catch-all for any unexpected throw — a raw stack trace names no
+ *       cause and defeats the designed-vs-real failure test (measured on
+ *       CI run 1: ENOENT at the write path surfaced as a bare exit 1)
  *
  * Usage: node tools/pull-workbook.mjs --out pulled.xlsx
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { createHash, createSign } from "node:crypto";
 
 const die = (code, msg) => {
@@ -30,9 +38,46 @@ const die = (code, msg) => {
   process.exit(code);
 };
 
+// Catch-all: an unexpected throw must still name a cause and exit with a
+// numbered code — a raw stack trace defeats the designed-vs-real failure
+// test (measured on the first CI run: ENOENT at the write, exit 1, no
+// "artefact stands" line).
+process.on("uncaughtException", e => die(6, `unexpected failure: ${e?.message ?? e}`));
+process.on("unhandledRejection", e => die(6, `unexpected failure: ${e?.message ?? e}`));
+
 const args = process.argv.slice(2);
 const outIdx = args.indexOf("--out");
 const OUT = outIdx >= 0 ? args[outIdx + 1] : "pulled.xlsx";
+if (!OUT) die(2, "--out needs a value");
+
+// Shared tail of every pull, stub or real: integrity check, then the write.
+// CI checks out a FRESH tree — nothing may assume the out directory exists.
+const finish = bytes => {
+  if (bytes.length < 4 || bytes.readUInt32LE(0) !== 0x04034b50)
+    die(4, "response is not an xlsx (zip magic missing)");
+  try {
+    mkdirSync(dirname(OUT), { recursive: true });
+    writeFileSync(OUT, bytes);
+  } catch (e) {
+    die(5, `cannot write pulled workbook to ${OUT}: ${e.message}`);
+  }
+  const sha = createHash("sha256").update(bytes).digest("hex");
+  console.log(`pulled -> ${OUT} (${bytes.length} bytes, sha256 ${sha})`);
+};
+
+// LOCAL REHEARSAL SEAM — never valid in CI. test/ci-rehearsal.mjs sets
+// LA28_PULL_STUB=<xlsx path> to exercise everything AFTER the network
+// (magic check, out-directory creation, the write) without credentials.
+// Refuses where CI is set, so it can never mask a real pull.
+if (process.env.LA28_PULL_STUB) {
+  if (process.env.CI) die(2, "LA28_PULL_STUB is set in CI — the stub is local-only");
+  console.log(`STUB PULL (local rehearsal): bytes from ${process.env.LA28_PULL_STUB}, no network, no credentials`);
+  let stubBytes;
+  try { stubBytes = readFileSync(process.env.LA28_PULL_STUB); }
+  catch (e) { die(4, `stub read failed: ${e.message}`); }
+  finish(stubBytes);
+  process.exit(0);
+}
 
 const rawKey = process.env.LA28_SA_KEY;
 const SHEET_ID = process.env.LA28_SPREADSHEET_ID;
@@ -55,7 +100,14 @@ const unsigned = b64u({ alg: "RS256", typ: "JWT" }) + "." + b64u({
   aud: "https://oauth2.googleapis.com/token",
   iat: now, exp: now + 600,
 });
-const jwt = unsigned + "." + createSign("RSA-SHA256").update(unsigned).sign(sa.private_key, "base64url");
+let jwt;
+try {
+  jwt = unsigned + "." + createSign("RSA-SHA256").update(unsigned).sign(sa.private_key, "base64url");
+} catch (e) {
+  // Reachable with a key that PARSES as JSON but carries bad PEM material —
+  // the exact shape of a truncated paste into the secret box.
+  die(2, `private_key unusable for signing — truncated or corrupted key?: ${e.message}`);
+}
 
 let token;
 try {
@@ -104,11 +156,8 @@ try {
     { headers: { authorization: `Bearer ${token}` } });
   if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 300)}`);
   bytes = Buffer.from(await r.arrayBuffer());
-  if (bytes.length < 4 || bytes.readUInt32LE(0) !== 0x04034b50) throw new Error("response is not an xlsx (zip magic missing)");
 } catch (e) {
   die(4, `export failed — sheet unshared with ${sa.client_email}, moved, or wrong id: ${e.message}`);
 }
 
-writeFileSync(OUT, bytes);
-const sha = createHash("sha256").update(bytes).digest("hex");
-console.log(`pulled ${SHEET_ID} -> ${OUT} (${bytes.length} bytes, sha256 ${sha})`);
+finish(bytes);
