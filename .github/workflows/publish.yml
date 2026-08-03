@@ -76,6 +76,12 @@ jobs:
           LA28_SA_KEY: ${{ secrets.LA28_SA_KEY }}
           LA28_SPREADSHEET_ID: ${{ secrets.LA28_SPREADSHEET_ID }}
         run: node tools/pull-workbook.mjs --out .ci-state/pulled.xlsx
+      # Built BEFORE the chain and on EVERY run: ci-publish folds the shell
+      # hash into its skip decision (an app-only change must still deploy),
+      # and a broken build should redden the run the day it breaks, not the
+      # day the data next changes.
+      - name: build site shell (app bundle + index.html)
+        run: node tools/build-site.mjs --out site
       - name: gate → validator → emit → round-trip → atomic publish
         run: node tools/ci-publish.mjs --workbook .ci-state/pulled.xlsx --site site --branch-baseline .archive-branch
       - name: expose whether this run published

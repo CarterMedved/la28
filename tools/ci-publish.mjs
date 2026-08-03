@@ -56,6 +56,14 @@ const wbSha = sha256(readFileSync(WB));
 // key / bootstrap; wbSha keeps exactly one job, the baseline integrity
 // check, whose two sides never cross an export boundary.
 const contentSha = contentSha256(WB);
+// Site-shell identity (stage-four step 4): the workflow builds the app
+// bundle + index.html into SITE before this runs. Folded into the skip
+// decision — content+rules alone would SKIP forever after an app-only
+// change and the new shell would never deploy. Absent shell (data-only
+// local runs) hashes as null and compares null==null.
+const shellSha = existsSync(`${SITE}/app.js`) && existsSync(`${SITE}/index.html`)
+  ? sha256(Buffer.concat([readFileSync(`${SITE}/app.js`), readFileSync(`${SITE}/index.html`)]))
+  : null;
 const stableRules = r => JSON.stringify(Object.fromEntries(Object.entries(r ?? {}).sort(([a], [b]) => a.localeCompare(b))));
 const writeFsync = (path, text) => {
   const fd = openSync(path, "w");
@@ -161,9 +169,10 @@ if (!validatorOk) {
   process.exit(1);
 }
 
-// 3. SKIP-CHECK — workbook sha AND rules map, never totals.
-if (lastMeta && lastMeta.content_sha256 === contentSha && stableRules(lastMeta.rules) === stableRules(rules)) {
-  console.log(`\nSKIP PUBLISH — workbook content (${contentSha.slice(0, 8)}) and rules map both unchanged since last publish (${lastMeta.reference_date}).`);
+// 3. SKIP-CHECK — content sha AND rules map AND site shell, never totals.
+if (lastMeta && lastMeta.content_sha256 === contentSha && stableRules(lastMeta.rules) === stableRules(rules)
+    && (lastMeta.site_shell_sha256 ?? null) === shellSha) {
+  console.log(`\nSKIP PUBLISH — workbook content (${contentSha.slice(0, 8)}), rules map and site shell all unchanged since last publish (${lastMeta.reference_date}).`);
   process.exit(0);
 }
 
@@ -197,6 +206,7 @@ copyFileSync(WB, `${STATE}/last-published.xlsx`);
 writeFsync(`${STATE}/last-published-meta.json`, JSON.stringify({
   workbook_sha256: wbSha, content_sha256: contentSha, rules, reference_date: REF_DATE,
   generated_at: artefact.meta.generated_at, archive_key: archiveKey,
+  site_shell_sha256: shellSha,
 }, null, 2));
 // Marker for the archive job: exists only when THIS run published (skip and
 // failure paths never reach here), so the branch is pushed exactly when the
