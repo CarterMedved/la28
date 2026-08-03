@@ -26,7 +26,7 @@
  *        [--state .ci-state] [--reference-date YYYY-MM-DD] [--acks pull-acks.json]
  */
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync, existsSync,
-         openSync, writeSync, fsyncSync, closeSync, renameSync } from "node:fs";
+         openSync, writeSync, fsyncSync, closeSync, renameSync, rmSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { emit } from "./emit-data.mjs";
@@ -44,6 +44,9 @@ const ACKS = flag("--acks", root + "pull-acks.json");
 
 mkdirSync(STATE, { recursive: true });
 mkdirSync(`${SITE}/data/archive`, { recursive: true });
+// A stale marker from a restored cache must never trigger an archive push
+// for a run that skipped or failed — clear it before anything can exit.
+try { rmSync(`${STATE}/publish-happened`); } catch { /* absent is the normal case */ }
 
 const sha256 = buf => createHash("sha256").update(buf).digest("hex");
 const wbSha = sha256(readFileSync(WB));
@@ -58,9 +61,24 @@ const run = (title, argv) => {
   catch { return false; }
 };
 
-const lastMetaPath = `${STATE}/last-published-meta.json`;
-const lastWbPath = `${STATE}/last-published.xlsx`;
+// Baseline source: the archive BRANCH (checked out by CI and passed via
+// --branch-baseline) is preferred over the state cache — the branch is the
+// durable store, the cache a best-effort accelerator that may be stale or
+// evicted. If the branch checkout carries any part of a baseline, the
+// branch IS the source (a half-pair there must fail integrity, never fall
+// back); with no branch baseline at all, the cache serves; with neither,
+// the bootstrap path below. The integrity check runs on whichever source
+// was chosen, ahead of everything.
+const BRANCH_DIR = flag("--branch-baseline", null);
+let baseDir = STATE, baselineSource = "state cache";
+if (BRANCH_DIR && (existsSync(`${BRANCH_DIR}/state/last-published.xlsx`) || existsSync(`${BRANCH_DIR}/state/last-published-meta.json`))) {
+  baseDir = `${BRANCH_DIR}/state`;
+  baselineSource = "archive branch";
+}
+const lastMetaPath = `${baseDir}/last-published-meta.json`;
+const lastWbPath = `${baseDir}/last-published.xlsx`;
 const lastMeta = existsSync(lastMetaPath) ? JSON.parse(readFileSync(lastMetaPath, "utf8")) : null;
+console.log(`baseline source: ${existsSync(lastWbPath) || lastMeta ? baselineSource : "none (bootstrap path)"}`);
 
 // 0. BASELINE INTEGRITY — a distinct code path from "no baseline", because a
 // baseline that is present-but-wrong is the tampering/corruption case: the
@@ -165,12 +183,18 @@ writeFsync(`${SITE}/data/archive/data-${archiveKey}.json`, json);
 writeFsync(`${SITE}/data/data.json.tmp`, json);
 renameSync(`${SITE}/data/data.json.tmp`, `${SITE}/data/data.json`);
 
-// Seed/update the baseline the next run gates against.
-copyFileSync(WB, lastWbPath);
-writeFsync(lastMetaPath, JSON.stringify({
+// Seed/update the baseline the next run gates against — ALWAYS into the
+// state cache (never into a --branch-baseline checkout: the archive job is
+// what persists the pair to the branch, from these cache files).
+copyFileSync(WB, `${STATE}/last-published.xlsx`);
+writeFsync(`${STATE}/last-published-meta.json`, JSON.stringify({
   workbook_sha256: wbSha, rules, reference_date: REF_DATE,
   generated_at: artefact.meta.generated_at, archive_key: archiveKey,
 }, null, 2));
+// Marker for the archive job: exists only when THIS run published (skip and
+// failure paths never reach here), so the branch is pushed exactly when the
+// baseline moved.
+writeFsync(`${STATE}/publish-happened`, JSON.stringify({ workbook_sha256: wbSha, archive_key: archiveKey, reference_date: REF_DATE }));
 
 const v = artefact.meta.validator;
 console.log(`\nPUBLISHED ${SITE}/data/data.json — workbook ${wbSha.slice(0, 8)} · ${v.error}E/${v.warn}W/${v.info}I · archive data-${archiveKey}.json`);

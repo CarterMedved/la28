@@ -1,0 +1,4 @@
+{
+  "_readme": "Empty change set for tools/diff-workbooks.mjs: used when two workbooks are asserted IDENTICAL at the cell level — e.g. the Sheets-export preflight (docs/provisioning.md), where v21 vs the Sheet's xlsx export must be an EXACT MATCH with zero observed changes.",
+  "expected": []
+}

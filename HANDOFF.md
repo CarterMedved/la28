@@ -228,11 +228,16 @@ entered. Recorded on the competition's notes.)*
   branch, CI skeleton (`tools/pull-workbook.mjs` → `tools/pull-gate.mjs` →
   `tools/ci-publish.mjs`, `.github/workflows/publish.yml`), and the provenance strip + audit
   artefact block — all harness-proven (`test/data-roundtrip.mjs`, `test/bundle-invariant.mjs`,
-  `test/ci-gate.mjs`, `test/render-app.mjs`). Still open: **no CI has ever run** (the two
-  secrets are not provisioned), and **archive durability** — the recommendation (dedicated
-  `archive` branch via a separate `contents: write` job, main branch-protected) is recorded
-  in `docs/stage-four.md` §4 and awaits a decision; until then archives and the gate baseline
-  ride the evictable actions cache.
+  `test/ci-gate.mjs`, `test/render-app.mjs`). The repo is PUBLIC (CarterMedved/la28, 4 Aug
+  2026) — rulesets/Pages unblocked; Pro rejected (zero security delta). Archive job built:
+  two-job split in `publish.yml.disabled` (publish = secrets + contents:read; archive =
+  contents:write + no secrets, marker-driven), and ci-publish prefers the archive-branch
+  baseline over the cache with the integrity check ahead of both. Hard constraints recorded
+  in stage-four.md: secret-holding workflows trigger on schedule/workflow_dispatch ONLY
+  (fork-PR secret theft on public repos); main's ruleset blocks force-push/deletion WITHOUT
+  required PRs — deliberate, don't "fix" it. Still open: provisioning (service account, two
+  secrets, Pages source, two rulesets) and the first real run; the workflow stays
+  `.disabled` until deliberately renamed.
 - **toStamp single-digit hours (fixed 3 Aug 2026).** Until then the app's date parser dropped
   the time of every fixture with an hour 0–9 (47 rows — the cricket 00:30s and Africa-window
   08:00s), rendering "no time recorded"; `docs/timezones.md` records why that invites re-entry

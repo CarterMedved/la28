@@ -186,9 +186,10 @@ const mutant = (name, fn) => {
   const bAcks = DIR + "bootstrap-acks.json";
   writeFileSync(bAcks, JSON.stringify({ acks: [{ digest, note: "bootstrap: test first publish", date: "2026-08-03" }] }));
   const booted = runPub(bAcks);
-  check("acked bootstrap PUBLISHES and names the ack",
+  check("acked bootstrap PUBLISHES, names the ack, and drops the publish marker",
     booted.code === 0 && /bootstrap acknowledged: "bootstrap: test first publish"/.test(booted.out)
-      && /PUBLISHED/.test(booted.out) && existsSync(S + "site/data/data.json"),
+      && /PUBLISHED/.test(booted.out) && existsSync(S + "site/data/data.json")
+      && existsSync(S + "state/publish-happened"),
     booted.out.slice(-400));
 }
 
@@ -255,6 +256,47 @@ const mutant = (name, fn) => {
   check("half a baseline (meta missing) is an integrity failure, not a fresh start",
     half.code === 3 && /Half a baseline/.test(half.out), `exit ${half.code}: ${half.out.slice(0, 300)}`);
   writeFileSync(metaPath, goodMeta);
+}
+
+// Baseline source preference: the archive-branch checkout outranks the
+// state cache; a half-pair on the branch fails integrity rather than
+// falling back; an empty branch dir falls through to the cache; a skip run
+// leaves no publish marker.
+{
+  const S = DIR + "bootstrap-test/";           // valid baseline pair lives in S/state after the tests above
+  const run = (stateDir, branchDir) => {
+    const argv = [root + "tools/ci-publish.mjs",
+      "--workbook", root + "data/LA28_Qualification_Database_v21.xlsx",
+      "--site", S + "site", "--state", stateDir,
+      "--reference-date", "2026-08-03", "--acks", DIR + "no-acks.json"];
+    if (branchDir) argv.push("--branch-baseline", branchDir);
+    try { return { code: 0, out: execFileSync("node", argv, { stdio: "pipe" }).toString() }; }
+    catch (e) { return { code: e.status, out: (e.stdout ?? "").toString() + (e.stderr ?? "").toString() }; }
+  };
+  const branchDir = DIR + "branch-sim/";
+  mkdirSync(branchDir + "state", { recursive: true });
+  writeFileSync(branchDir + "state/last-published.xlsx", readFileSync(S + "state/last-published.xlsx"));
+  writeFileSync(branchDir + "state/last-published-meta.json", readFileSync(S + "state/last-published-meta.json"));
+
+  const emptyCache = DIR + "empty-cache/";
+  execFileSync("rm", ["-rf", emptyCache]);
+  const r1 = run(emptyCache, branchDir);
+  check("branch baseline outranks an EMPTY cache (source line says archive branch, run skips clean)",
+    r1.code === 0 && /baseline source: archive branch/.test(r1.out) && /SKIP PUBLISH/.test(r1.out)
+      && !existsSync(emptyCache + "publish-happened"),
+    r1.out.slice(0, 300));
+
+  const halfBranch = DIR + "branch-half/";
+  mkdirSync(halfBranch + "state", { recursive: true });
+  writeFileSync(halfBranch + "state/last-published-meta.json", readFileSync(S + "state/last-published-meta.json"));
+  const r2 = run(S + "state", halfBranch);
+  check("half-pair on the branch is exit 3, NEVER a fallback to the valid cache",
+    r2.code === 3 && /Half a baseline/.test(r2.out), `exit ${r2.code}: ${r2.out.slice(0, 300)}`);
+
+  const r3 = run(S + "state", DIR + "branch-empty-nonexistent/");
+  check("empty branch dir falls through to the state cache (source line says state cache)",
+    r3.code === 0 && /baseline source: state cache/.test(r3.out) && /SKIP PUBLISH/.test(r3.out),
+    r3.out.slice(0, 300));
 }
 
 // 12. The pull fails closed on missing configuration (exit 2, publishes nothing).

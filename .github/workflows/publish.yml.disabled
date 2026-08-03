@@ -1,35 +1,71 @@
-# Stage-four step 3 skeleton (docs/stage-four.md). Secrets, and only these:
-#   LA28_SA_KEY         — Google service-account key JSON. The account holds NO
-#                         IAM roles; the workbook sheet is shared to it as
-#                         Viewer and the token is scoped drive.readonly, so it
-#                         can read exactly the files shared with it and write
-#                         nothing. Revocation => the pull step fails, the chain
-#                         stops, the last published artefact keeps serving.
+# ============================================================================
+# DORMANT — this file is .yml.disabled and GitHub Actions does not parse it.
+#
+# THE MOMENT IT IS RENAMED to publish.yml on the default branch:
+#   - the schedule trigger registers and this runs DAILY at 06:17 UTC;
+#   - each run will pull the sheet, gate, validate, publish to Pages and
+#     push the archive branch — or, with secrets missing, fail closed at
+#     the pull step (exit 2) and email a failure notification every day;
+#   - the FIRST successful pull hits the no-baseline path and exits 1 by
+#     design, printing the bootstrap digest to commit to pull-acks.json.
+# Renaming it is a deliberate act. Provision first (stage-four.md):
+#   secrets LA28_SA_KEY + LA28_SPREADSHEET_ID · Pages source = Actions ·
+#   rulesets on main and archive (block force-push + restrict deletions,
+#   empty bypass, NO required PRs — see stage-four.md for why).
+#
+# HARD CONSTRAINT (stage-four.md, public repo + secrets): triggers are
+# `schedule` and `workflow_dispatch` ONLY. NEVER add `pull_request` and
+# NEVER `pull_request_target` — on a public repo a fork's PR would run
+# foreign code against LA28_SA_KEY. A trigger change to this file is a
+# rule change: treat it with gated-edit scrutiny, not as a convenience.
+#
+# Job split (stage-four.md §4): `publish` holds the secrets and only ever
+# READS the repo; `archive` writes the repo (archive branch only — a
+# convention made tamper-evident by the branch rulesets) and holds NO
+# secrets. Neither job gets both powers.
+#
+# Secrets, and only these:
+#   LA28_SA_KEY         — Google service-account key JSON. The account holds
+#                         NO IAM roles; the sheet is shared to it as Viewer,
+#                         the token is scoped drive.readonly. Revocation =>
+#                         pull fails, chain stops, last artefact stands.
 #   LA28_SPREADSHEET_ID — pinned sheet id (config, not sensitive).
-# GITHUB_TOKEN is the per-run ephemeral token, restricted by the permissions
-# block below (read code, deploy pages). No PAT anywhere.
+# GITHUB_TOKEN is per-run and per-job scoped by the permissions blocks. No PAT.
+# ============================================================================
 name: publish
 on:
   schedule:
     - cron: "17 6 * * *"
   workflow_dispatch:
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: publish
   cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read          # this job can NEVER push code
+      pages: write
+      id-token: write
+    outputs:
+      published: ${{ steps.outcome.outputs.published }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
       - run: npm ci
-      # Baseline state (last-published workbook + meta) carried between runs.
+      # Durable baseline: the archive branch, if it exists yet. The
+      # continue-on-error covers exactly one legitimate case — no archive
+      # branch before the first push; ci-publish fails closed on every
+      # missing/half/wrong baseline state regardless of why this was empty.
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: archive
+          path: .archive-branch
+      # Best-effort accelerator only; the branch outranks it in ci-publish.
       - uses: actions/cache@v4
         with:
           path: .ci-state
@@ -41,9 +77,11 @@ jobs:
           LA28_SPREADSHEET_ID: ${{ secrets.LA28_SPREADSHEET_ID }}
         run: node tools/pull-workbook.mjs --out .ci-state/pulled.xlsx
       - name: gate → validator → emit → round-trip → atomic publish
-        run: node tools/ci-publish.mjs --workbook .ci-state/pulled.xlsx --site site
-      # Every run's full report and pulled bytes are archived as CI artefacts,
-      # pass or fail (§2: pulled bytes hashed and archived per run).
+        run: node tools/ci-publish.mjs --workbook .ci-state/pulled.xlsx --site site --branch-baseline .archive-branch
+      - name: expose whether this run published
+        id: outcome
+        run: echo "published=$([ -f .ci-state/publish-happened ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      # Every run's report and pulled bytes archived as CI artefacts, pass or fail.
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -53,7 +91,55 @@ jobs:
             .ci-state/gate-report.json
             .ci-state/pulled.xlsx
           if-no-files-found: ignore
+      # The baseline pair + archive tree, handed to the archive job (which
+      # holds no secrets and must not rebuild them from scratch).
+      - uses: actions/upload-artifact@v4
+        if: steps.outcome.outputs.published == 'true'
+        with:
+          name: baseline-${{ github.run_id }}
+          path: |
+            .ci-state/last-published.xlsx
+            .ci-state/last-published-meta.json
+            .ci-state/publish-happened
+            site/data/archive/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
       - uses: actions/deploy-pages@v4
+
+  # Separate job, separate token: contents:write, NO secrets, runs only when
+  # the publish job actually published (the marker file is written by
+  # ci-publish exactly on the publish path — never on skip or failure).
+  # Pushes the baseline pair + archive tree to the archive branch as a
+  # fast-forward commit; the branch ruleset blocks force-push and deletion,
+  # so history is the tamper-evidence.
+  archive:
+    needs: publish
+    if: needs.publish.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: baseline-${{ github.run_id }}
+          path: .handoff
+      - name: push baseline + archive tree to the archive branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch origin archive 2>/dev/null; then
+            git switch -c archive FETCH_HEAD
+          else
+            git switch --orphan archive   # data-only branch: no code, ever
+          fi
+          mkdir -p state data/archive
+          cp .handoff/.ci-state/last-published.xlsx      state/
+          cp .handoff/.ci-state/last-published-meta.json state/
+          cp -R .handoff/site/data/archive/.             data/archive/
+          rm -rf .handoff
+          git add state data/archive
+          git commit -m "publish $(date -u +%Y-%m-%dT%H:%MZ): workbook $(node -e 'console.log(JSON.parse(require("fs").readFileSync("state/last-published-meta.json","utf8")).workbook_sha256.slice(0,12))')"
+          git push origin archive

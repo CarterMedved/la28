@@ -4,6 +4,16 @@ The gate between the workbook and anything published. Reads
 `LA28_Qualification_Database.xlsx`, reports whether it is fit to publish.
 Exit 1 only on unsuppressed ERROR; WARN and INFO never block.
 
+**Canonical source (after cutover — docs/provisioning.md):** once the
+Google Sheet exists, THE SHEET is the workbook; every data change is made
+there and reaches the site only through pull → gate → validator →
+publish. `data/*.xlsx` here is history: the v5–v21 lineage + edit scripts
+are the provenance record, and the unversioned file is the harnesses'
+pinned fixture. Editing a repo workbook changes nothing on the site.
+During an outage there is no local publish path by design — stage a local
+edit pass with the usual diff-proof, then apply the same edit to the
+Sheet when service returns.
+
 ```
 node src/validate/cli.ts data/LA28_Qualification_Database.xlsx \
   [--reference-date YYYY-MM-DD]      # the clock for every time-dependent rule (default: today)

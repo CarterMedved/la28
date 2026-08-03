@@ -5,9 +5,14 @@
 fetch branch + bundle invariant; CI skeleton (`tools/pull-workbook.mjs`
 with per-run reach logging, `tools/pull-gate.mjs`, `tools/ci-publish.mjs`,
 `.github/workflows/publish.yml`, proven by `test/ci-gate.mjs`); provenance
-strip + audit artefact block (proven in `test/render-app.mjs`). OPEN:
-archive durability — recommendation recorded in §4, awaiting pick; and no
-CI has ever run: the workflow needs the two secrets provisioned first.*
+strip + audit artefact block (proven in `test/render-app.mjs`). Repo is
+PUBLIC on GitHub (CarterMedved/la28, decision 4 Aug 2026 — see PLAN
+BOUNDARY in §2); archive job built 4 Aug 2026 (two-job split in
+`publish.yml.disabled`, branch-baseline preference in `ci-publish.mjs`,
+proven in `test/ci-gate.mjs`). OPEN: provisioning and the first real
+run — runbook with BLOCKING Sheets preflight in `docs/provisioning.md`;
+the workflow stays `.disabled` until deliberately renamed; no CI has ever
+run.*
 
 ## 1. The invariant that must survive
 
@@ -221,15 +226,49 @@ one unacked gated change could publish. Options weighed:
   (3) run history bloats the branch (small JSONs; the pulled xlsx stays a
   CI artefact, not a branch file).
 
+  **Account setting warning (3 Aug 2026): do NOT suggest GitHub's "Block
+  command line pushes that expose my email" for this project.** It is
+  account-wide; the owner has six other private repos whose commits use
+  the Gmail identity, and enabling it would fail their next push. Safe
+  sequence if ever wanted: set repo-local noreply identity in every other
+  repo first, then enable the block.
+
+  **PLAN BOUNDARY — RESOLVED (4 Aug 2026): la28 is PUBLIC.** Rulesets and
+  branch protection require a public repo or a paid plan on GitHub Free,
+  and so does Pages — the boundary governed both halves of stage four.
+  Decision: public (option a). **Pro was rejected because its security
+  delta over public was zero** — identical ruleset semantics, and the
+  "privacy" it bought was a source tree whose most sensitive contents the
+  Pages site publishes anyway. Unlimited Actions minutes come free with
+  public. Treat publication as irreversible: flipping back to private
+  later does not unpublish cached/forked history.
+
   **PRECONDITION — verify before provisioning, not after:**
-  `main` (and any branch that carries code) is branch-protected with
-  required pull requests, so the archive job's `contents: write` token
-  physically cannot push code. This is a repo *setting*, invisible to
-  every harness — it must be checked by a human against the repo's
-  branch-protection page and re-checked if the repo is ever migrated or
-  forked. The archive branch design is NOT approved-for-use until this
-  is confirmed; without it, "scoped to a data branch" is a hope, not a
-  property.
+  `main` gets a ruleset with **block force pushes + restrict deletions
+  only, bypass list empty. Required pull requests are deliberately OFF —
+  do not reintroduce them as a "best practice."** Recorded why (4 Aug
+  2026): this is a solo project whose commits are made locally with the
+  agent; a PR requirement blocks every push for zero security gain,
+  because the protection PRs would notionally provide against CI is
+  already delivered by the publish job holding `contents: read` — it
+  cannot push code regardless. The archive job's `contents: write` CAN
+  push to main; force-push-blocking makes any such push a permanent,
+  attributable commit, which is this design's tamper-evidence model on
+  every branch. These are repo *settings*, invisible to every harness —
+  a human must verify them on the repo's Rules page and re-verify if the
+  repo is migrated or forked.
+
+  **HARD CONSTRAINT — public repo + secrets (4 Aug 2026): any workflow
+  that can read secrets uses ONLY `schedule` and `workflow_dispatch`
+  triggers. NEVER `pull_request`, and NEVER `pull_request_target`.** On a
+  public repo, a fork's pull request runs foreign code; `pull_request` on
+  a secret-holding workflow (or `pull_request_target` anywhere near a
+  checkout of PR code) hands the fork the service-account key. A future
+  session adding a "convenient" trigger to publish.yml is the exact
+  failure this paragraph exists to stop — the workflow file carries the
+  same constraint in its own header comment, and any trigger change to a
+  secret-holding workflow is a rule change requiring the same scrutiny
+  as a gated workbook edit.
 
   Independent of the branch: **a missing baseline fails closed**
   (implemented 3 Aug 2026 in `tools/ci-publish.mjs`, proven both
