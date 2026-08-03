@@ -17,6 +17,7 @@
 import { build } from "esbuild";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { emit, SENTINEL } from "../tools/emit-data.mjs";
+import { buildSite } from "../tools/build-site.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 let failures = 0;
@@ -48,6 +49,24 @@ check("import lint: no data.json import in app source",
   !/(?:from\s+|import\s*\(\s*|require\s*\(\s*)["'][^"']*data\.json/.test(appSource));
 check("app source does not contain the sentinel literal (shape-validates instead)",
   !appSource.includes(SENTINEL));
+
+// ---- 1b. the PRODUCTION bundle — the one Pages actually serves ----
+// Built through the same exported buildSite() the CI workflow calls: real
+// react/xlsx/papaparse, minified, mount entry. The stubbed test bundle above
+// proves the app source; this proves the deployable.
+await buildSite(root + "test/.build/site");
+const prodBundle = readFileSync(root + "test/.build/site/app.js", "utf8");
+const prodHtml = readFileSync(root + "test/.build/site/index.html", "utf8");
+console.log("Production bundle (tools/build-site.mjs):");
+check("sentinel appears nowhere in the production bundle", !prodBundle.includes(SENTINEL));
+check("no workbook version label compiled into the production bundle",
+  !/LA28_Qualification_Database_v\d+/.test(prodBundle));
+check("artefact fetch is RELATIVE (resolves under the /la28/ Pages base)",
+  prodBundle.includes('fetch("data/data.json"') && !prodBundle.includes('fetch("/data'));
+check("mount contract: bundle mounts #root and index.html provides it",
+  prodBundle.includes('getElementById("root")') && prodHtml.includes('id="root"'));
+check("index.html references the bundle relatively",
+  prodHtml.includes('src="./app.js"') && !prodHtml.includes('src="/'));
 
 // ---- 2. the violation fixture: meta-less, tree-shaken import ----
 mkdirSync(root + "test/.build/artefact", { recursive: true });

@@ -37,6 +37,8 @@ import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync,
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
+import { createServer } from "node:http";
+import { SENTINEL } from "../tools/emit-data.mjs";
 
 const repo = dirname(dirname(fileURLToPath(import.meta.url)));
 const STANDING = "Publishing nothing; the last published artefact stands.";
@@ -111,13 +113,23 @@ run("pull (stub) into fresh .ci-state → exit 0", PULL,
   { cwd: scratch, env: { LA28_PULL_STUB: WORKBOOK } });
 assertFile("pulled workbook written on a fresh checkout", join(scratch, ".ci-state/pulled.xlsx"));
 
+run("build site shell (the workflow's pre-chain step)",
+  ["node", "tools/build-site.mjs", "--out", "site"], { cwd: scratch });
+
+// The repo carries the REAL bootstrap ack (and the stub workbook's content
+// sha equals the live Sheet's), so a scratch run 1 would ride it straight
+// through the gate. The rehearsal rehearses the pipeline from its virgin
+// state: empty the scratch acks so run 1 must earn its own digest.
+const acksPath = join(scratch, "pull-acks.json");
+const realAcks = JSON.parse(readFileSync(acksPath, "utf8"));
+writeFileSync(acksPath, JSON.stringify({ _readme: realAcks._readme, acks: [] }, null, 2));
+
 const run1 = run("run 1: DESIGNED failure — exit 1, NO BASELINE FOUND, digest printed", CHAIN,
   { cwd: scratch, expectCode: 1, expectOut: ["NO BASELINE FOUND", "BOOTSTRAP"] });
 const digest = run1.match(/"digest": "([0-9a-f]{64})"/)?.[1];
 if (!digest) fail("run 1", "no 64-hex bootstrap digest in output", run1);
 ok("bootstrap digest extracted");
 
-const acksPath = join(scratch, "pull-acks.json");
 const acks = JSON.parse(readFileSync(acksPath, "utf8"));
 acks.acks.push({ digest, note: "bootstrap: local rehearsal", date: "rehearsal" });
 writeFileSync(acksPath, JSON.stringify(acks, null, 2));
@@ -135,6 +147,48 @@ const meta = JSON.parse(readFileSync(join(scratch, ".ci-state/last-published-met
 for (const k of ["workbook_sha256", "content_sha256"])
   meta[k]?.length === 64 ? ok(`meta carries ${k} (archive commit message reads it)`) : fail("meta", `bad ${k}`);
 
+// -- the page, served exactly as Pages serves it: under the /la28/ base ----
+// Every hop a browser makes, with real HTTP and real relative-URL
+// resolution: the page, the script it references, the artefact the script
+// fetches. A path that works at / and 404s under /la28/ dies HERE.
+assertFile("site shell beside the data (index.html)", join(scratch, "site/index.html"));
+assertFile("site shell beside the data (app.js)", join(scratch, "site/app.js"));
+const siteDir = join(scratch, "site");
+const server = createServer((req, res) => {
+  const rel = req.url === "/la28" || req.url === "/la28/" ? "index.html"
+            : req.url.startsWith("/la28/") ? req.url.slice("/la28/".length).split("?")[0] : null;
+  const f = rel ? join(siteDir, rel) : null;
+  if (f && existsSync(f)) { res.writeHead(200); res.end(readFileSync(f)); }
+  else { res.writeHead(404); res.end("not found"); }
+});
+await new Promise(r => server.listen(0, "127.0.0.1", r));
+const base = `http://127.0.0.1:${server.address().port}/la28/`;
+
+const page = await fetch(base);
+page.ok ? ok("GET /la28/ → 200") : fail("page", `GET /la28/ → ${page.status}`);
+const html = await page.text();
+html.includes('id="root"') ? ok("index.html carries the #root mount point") : fail("page", "no #root in index.html");
+const src = html.match(/<script[^>]+src="([^"]+)"/)?.[1];
+if (!src) fail("page", "no script src in index.html");
+const js = await fetch(new URL(src, base));   // relative resolution, as the browser does it
+js.ok ? ok(`script src ${JSON.stringify(src)} resolves under /la28/`) : fail("page", `script → ${js.status}`);
+const bundle = await js.text();
+bundle.includes('getElementById("root")') ? ok("bundle mounts #root") : fail("bundle", "no #root mount");
+bundle.includes('fetch("data/data.json"') ? ok("bundle fetches the artefact by RELATIVE path")
+  : fail("bundle", "relative artefact fetch missing");
+bundle.includes(SENTINEL) ? fail("bundle", "sentinel found in the served production bundle") : ok("no sentinel in the served bundle");
+const dres = await fetch(new URL("data/data.json", base));
+dres.ok ? ok("the bundle's fetch URL resolves under /la28/ → 200") : fail("artefact", `data.json → ${dres.status}`);
+const served = await dres.json();
+served?.meta?.schema_version === 1 && Array.isArray(served?.data?.events)
+  ? ok("served artefact passes the app's shape check") : fail("artefact", "shape check would reject it");
+served.data._sentinel === SENTINEL
+  ? ok("sentinel travels in the DATA, never the bundle") : fail("artefact", "data._sentinel missing");
+served.meta.workbook.version_label === null && served.meta.workbook.content_sha256?.length === 64
+  ? ok("CI-shaped meta: version_label null, content_sha256 present (provenance falls back to it)")
+  : fail("artefact", "meta not CI-shaped — provenance fallback untested");
+server.close();
+
 const dataBefore = readFileSync(join(scratch, "site/data/data.json"));
 run("run 3: untouched workbook → SKIP, exit 0", CHAIN,
   { cwd: scratch, expectCode: 0, expectOut: ["SKIP PUBLISH"] });
@@ -144,6 +198,17 @@ existsSync(join(scratch, ".ci-state/publish-happened"))
 dataBefore.equals(readFileSync(join(scratch, "site/data/data.json")))
   ? ok("data.json byte-identical after SKIP")
   : fail("run 3", "data.json changed on a SKIP run");
+
+// -- run 4: an APP-ONLY change must still deploy -------------------------
+// Content and rules are unchanged; only the shell moved. Without the shell
+// hash in the skip decision this would SKIP forever and the new app would
+// never reach the site.
+writeFileSync(join(siteDir, "index.html"),
+  readFileSync(join(siteDir, "index.html"), "utf8") + "<!-- shell change -->\n");
+run("run 4: shell-only change → republishes, not SKIP", CHAIN,
+  { cwd: scratch, expectCode: 0, expectOut: ["PUBLISHED"], forbidOut: ["SKIP PUBLISH"] });
+assertFile("marker present after shell-only publish (Pages deploy would run)",
+  join(scratch, ".ci-state/publish-happened"));
 
 rmSync(scratch, { recursive: true, force: true });
 console.log(`\nCI REHEARSAL PASS — ${passed} checks (scratch removed)`);
