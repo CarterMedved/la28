@@ -197,6 +197,17 @@ that states a number, a comparison, or a consequence:
    the claim — "lifts three teams" hid the error that "lifts Thailand, PNG and the
    Netherlands" exposed), and DATED-ANCHORED.
 
+**New vocabulary is tier 3 until proven.** A term coined for sheet prose ("the counted
+order") is a definition-shaped claim about a derived set, and its first two definitions were
+each wrong in a different single-column way — "Olympic-filtered" dropped West Indies,
+"counts_in_field = Y" matched ONLY West Indies. Both were validated against West
+Indies/Scotland, the one example that cannot discriminate: WI is the sole override row, so
+right and wrong definitions alike pass it. Before a coined term is used in more than one
+cell: (1) check the definition against the CODE that derives the set — the code is right,
+the prose gets rewritten to match (thresholds.ts uses `olympic_eligible = Y OR
+counts_in_field = Y`); (2) pick a worked example that would FAIL a wrong definition — a team
+included via the ordinary path (Pakistan), not only the exceptional one.
+
 ---
 
 ## PART 6 — Calendar

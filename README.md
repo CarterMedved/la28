@@ -62,13 +62,20 @@ Tests (all must pass before trusting a change):
 ## Sheet conventions (paste-ready for the workbook's README tab)
 
 > **The counted order** (defined term — use it wherever prose describes a
-> field-setting ranking): a ranking's rows with `counts_in_field = Y`, in
-> rank order — the order that fills tournament fields. Counting toward a
-> field (`counts_in_field`) and holding a quota place (`olympic_eligible`)
-> are separate tests: West Indies counts but cannot hold; Scotland neither
-> counts nor holds. "Olympic-filtered" or "eligibility-filtered" are wrong
-> names for it — an olympic_eligible filter would drop West Indies and
-> invert the rule.
+> field-setting ranking): a ranking's rows with `olympic_eligible = Y` OR
+> `counts_in_field = Y`, in rank order. This is the set the code uses
+> (src/lib/thresholds.ts, NEXT_N_NOT_QUALIFIED and TOP_N_OF_POOL; the cut
+> then removes already-qualified teams and provisional holders on top).
+> `counts_in_field` is an OVERRIDE that adds a team which cannot hold a
+> place — never a selector: on its own it matches exactly one team (West
+> Indies), so a one-column definition is wrong in either direction.
+> Discriminating test, chosen so a wrong definition FAILS it: Pakistan
+> (eligible, no override) is in via eligibility — any definition that
+> drops it is wrong; West Indies (ineligible, override) is in via the
+> override; Scotland (ineligible, no override) is out on both. NB the
+> continental-places route uses plain `olympic_eligible = Y` WITHOUT the
+> override — West Indies counts toward a field but never toward the
+> continental allocation (thresholds.ts splits these).
 
 > **start_date / end_date** — always the competition's *true* start and end,
 > from the official schedule, even when earlier rounds' fixtures aren't
