@@ -1,0 +1,17 @@
+{
+  "workbook_sha256": "c01b32997491db5ca9f42a69d7c1be99a8f98f44631634355a9e993140996f11",
+  "content_sha256": "267ee72df849439ca935a404e19ed3f190b0ec2276956a5649926da662c05bea",
+  "rules": {
+    "state/tie": 1,
+    "coverage/cut-line-blocked": 1,
+    "coverage/cut-line-zero-headroom": 1,
+    "coverage/past-fixtures-no-result": 1,
+    "coverage/undated-fixtures": 1,
+    "coverage/tz-undeclared": 1,
+    "coverage/missing-earlier-rounds": 5,
+    "coverage/pool-preview": 1
+  },
+  "reference_date": "2026-08-03",
+  "generated_at": "2026-08-03T19:46:04.811Z",
+  "archive_key": "132178c23c68"
+}
