@@ -174,6 +174,29 @@ sha256 is part of ci-publish's SKIP decision). Run it before pushing app changes
 **Suppression discipline:** `known-issues.json` entries need a note saying what would clear
 them. Remove entries the moment they resolve; a stale suppression is worse than none.
 
+**Prose claims about derived quantities — the three tiers (3 Aug 2026).** Every prose error in
+the presentation pass was a claim no module derives. Name the class before writing a sentence
+that states a number, a comparison, or a consequence:
+
+1. **Module-derived → rule-checked.** Ranks, ratings, margins duplicate Standings;
+   `hygiene/prose-unanchored-snapshot` nets ordinals and rating margins, and date-checks table
+   anchors against the ranking's `as_of`. Write such numbers only behind a dated anchor, or
+   not at all — the app derives positions.
+2. **Checkable once `teams_count` fills** (scheduled, with `arithmetic/qualifiers-vs-field`):
+   conversion-rate claims ("4 of 24"). Until then only one edge in the database has a
+   computable rate, so no conversion superlative can be certified for anything.
+3. **PERMANENTLY READ-IT-YOURSELF: counterfactuals and cross-database superlatives.**
+   "The cut would move to 14", "this exclusion lifts the Netherlands in", "tightest anywhere
+   in this database". Verifying a counterfactual needs re-derivation under a modified world —
+   no module does that; verifying a superlative needs the full cross-database column. Both
+   produced real errors on 3 Aug 2026 ("tightest" was jointly held; "harshest" was false;
+   "lifts three teams" was one team lifted and two shifted). `hygiene/prose-superlative`
+   flags the superlative SHAPE and forces the read — it verifies nothing, and scoped
+   comparatives pass it unseen; counterfactuals have no reliable textual marker at all.
+   Convention for this tier: keep such claims FEW, NAMED (names are what let a reader check
+   the claim — "lifts three teams" hid the error that "lifts Thailand, PNG and the
+   Netherlands" exposed), and DATED-ANCHORED.
+
 ---
 
 ## PART 6 — Calendar

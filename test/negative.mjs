@@ -797,5 +797,26 @@ console.log("\nprose-unanchored-snapshot (both directions):");
   if (!okW) failures++;
 }
 
+// --- hygiene/prose-superlative: flags the shape, verifies nothing ---
+console.log("\nprose-superlative (both directions):");
+{
+  const aoa = readAoA();
+  const cN = col(aoa, "Links", "notes"), cId = col(aoa, "Links", "link_id");
+  const r1 = aoa["Links"][1], r2 = aoa["Links"][2];
+  for (const r of [r1, r2]) while (r.length <= cN) r.push(null);
+  r1[cN] = "The harshest conversion rate in the database: most go home.";   // marked → must fire
+  r2[cN] = "The harshest conversion rate of the four FOQTs.";               // scoped → must pass unseen
+  const p = MUT + "prose-superlative.xlsx";
+  writeAoA(aoa, p);
+  const f = runValidator(p).findings.find(x => x.rule === "hygiene/prose-superlative");
+  const id1 = String(r1[cId]), id2 = String(r2[cId]);
+  const ok1 = !!f && f.severity === "WARN" && f.message.includes(`${id1}·notes`) && /NO MODULE VERIFIES/.test(f.message);
+  console.log(`  ${ok1 ? "PASS" : "FAIL"}  cross-database superlative fires, and the WARN says it verifies nothing`);
+  if (!ok1) failures++;
+  const ok2 = !f || !f.message.includes(`${id2}·notes`);
+  console.log(`  ${ok2 ? "PASS" : "FAIL"}  a scoped comparative ("of the four FOQTs") passes unseen — the stated boundary`);
+  if (!ok2) failures++;
+}
+
 console.log(failures ? `\n${failures} negative test(s) FAILED` : "\nAll negative tests passed — every rule has been seen to fire.");
 process.exit(failures ? 1 : 0);

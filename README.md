@@ -61,6 +61,15 @@ Tests (all must pass before trusting a change):
 
 ## Sheet conventions (paste-ready for the workbook's README tab)
 
+> **The counted order** (defined term — use it wherever prose describes a
+> field-setting ranking): a ranking's rows with `counts_in_field = Y`, in
+> rank order — the order that fills tournament fields. Counting toward a
+> field (`counts_in_field`) and holding a quota place (`olympic_eligible`)
+> are separate tests: West Indies counts but cannot hold; Scotland neither
+> counts nor holds. "Olympic-filtered" or "eligibility-filtered" are wrong
+> names for it — an olympic_eligible filter would drop West Indies and
+> invert the rule.
+
 > **start_date / end_date** — always the competition's *true* start and end,
 > from the official schedule, even when earlier rounds' fixtures aren't
 > captured in Fixtures. The start of the captured segment is never stored: it

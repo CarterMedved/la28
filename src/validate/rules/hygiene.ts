@@ -202,6 +202,39 @@ export const proseUnanchoredSnapshot: Rule = ({ ds }) => {
     `("On the <as_of date> table: …"). Best-effort net — rule constants like "top 15" are not matched:\n      ${hits.join("\n      ")}`)];
 };
 
+/**
+ * Cross-database superlatives are the permanently read-it-yourself class
+ * (HANDOFF, "prose claims about derived quantities"): "tightest margin
+ * anywhere in this database" was jointly held, not tightest; "harshest
+ * conversion rate in the database" was false with cricket the
+ * counterexample. No module derives cross-database comparisons, so this
+ * lint VERIFIES NOTHING — it matches the superlative shape ("-est … in
+ * the/this database | anywhere | of any") and forces a human read. Scoped
+ * comparatives ("harshest of the four FOQTs") carry no marker and pass;
+ * that is the boundary of best-effort, not an endorsement.
+ */
+export const proseSuperlative: Rule = ({ ds }) => {
+  const RX = /\b(\w+est)\b[^.!?]{0,60}?\b(in\s+th(?:e|is)\s+database|anywhere|of\s+any)\b/gi;
+  const NOT_SUPERLATIVE = /^(west|test|rest|contest|interest|latest)$/i;   // "latest" = temporal, not comparative
+  const TABS: (keyof typeof idOf)[] = ["links", "cuts", "qualified", "rank", "comps"];
+  const hits: string[] = [];
+  for (const tab of TABS)
+    for (const row of (ds as unknown as Record<string, Record<string, unknown>[]>)[tab])
+      for (const [c, v] of Object.entries(row)) {
+        if (typeof v !== "string") continue;
+        for (const m of v.matchAll(RX)) {
+          if (NOT_SUPERLATIVE.test(m[1])) continue;
+          hits.push(`${tab}·${String(idOf[tab](row as never))}·${c}: "…${m[0].slice(0, 70)}…"`);
+        }
+      }
+  if (!hits.length) return [];
+  return [finding("WARN", "hygiene/prose-superlative", ds.sheetNameOf.links, "(aggregate)",
+    `${hits.length} cross-database superlative(s) in prose. NO MODULE VERIFIES THESE — this rule matched a ` +
+    `text shape, nothing more; it cannot judge truth, and scoped comparatives pass it unseen. Each match ` +
+    `needs a human read: evidence it, date-anchor it, or delete it. The class has produced real errors ` +
+    `("tightest anywhere" was jointly held; "harshest in the database" was false):\n      ${hits.join("\n      ")}`)];
+};
+
 export const formulaCellsRule: Rule = ({ ds }) => {
   if (!ds.formulaCells?.length) return [];
   const byTab: Record<string, string[]> = {};
