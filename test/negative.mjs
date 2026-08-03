@@ -757,5 +757,45 @@ console.log("\nprose-unanchored-snapshot (both directions):");
   if (!ok3) failures++;
 }
 
+// Table-anchor date check: the anchor must match the ranking's Standings
+// as_of. Right date → exempt as before; wrong date → its own finding (a
+// wrong anchor certifies a stale number and must not buy an exemption).
+{
+  const aoa = readAoA();
+  const cRid = col(aoa, "Cut_Lines", "ranking_id"), cNotes = col(aoa, "Cut_Lines", "notes"),
+        cCid = col(aoa, "Cut_Lines", "cut_line_id");
+  const cSRid = col(aoa, "Standings", "ranking_id"), cAsOf = col(aoa, "Standings", "as_of");
+  // find a cut whose ranking has standings with a single as_of
+  let cutRow = null, asOfIso = null;
+  for (let i = 1; i < aoa["Cut_Lines"].length; i++) {
+    const rid = aoa["Cut_Lines"][i][cRid];
+    if (rid == null) continue;
+    const dates = new Set(aoa["Standings"].slice(1).filter(r => r[cSRid] === rid && r[cAsOf]).map(r => String(r[cAsOf]).slice(0, 10)));
+    if (dates.size === 1) { cutRow = i; asOfIso = [...dates][0]; break; }
+  }
+  if (cutRow == null) throw new Error("no cut with single-as_of standings in baseline — anchor-date directions cannot run");
+  const [y, mo, d] = asOfIso.split("-").map(Number);
+  const M = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const rightAnchor = `On the ${d} ${M[mo]} ${y} table they were 5th.`;
+  const wrongAnchor = `On the ${d} ${M[mo]} ${y - 1} table they were 5th.`;
+  const cid = String(aoa["Cut_Lines"][cutRow][cCid]);
+
+  const buildWith = (name, text) => {
+    const a2 = readAoA();
+    a2["Cut_Lines"][cutRow][cNotes] = text;
+    const p = MUT + name + ".xlsx";
+    writeAoA(a2, p);
+    return runValidator(p).findings.find(x => x.rule === "hygiene/prose-unanchored-snapshot");
+  };
+  const fRight = buildWith("prose-anchor-right", rightAnchor);
+  const okR = !fRight || !fRight.message.includes(`${cid}·notes`);
+  console.log(`  ${okR ? "PASS" : "FAIL"}  table anchor matching standings as_of (${asOfIso}) exempts the field`);
+  if (!okR) failures++;
+  const fWrong = buildWith("prose-anchor-wrong", wrongAnchor);
+  const okW = !!fWrong && fWrong.message.includes(`${cid}·notes`) && fWrong.message.includes("as_of");
+  console.log(`  ${okW ? "PASS" : "FAIL"}  same anchor dated one year off fires, naming the as_of mismatch`);
+  if (!okW) failures++;
+}
+
 console.log(failures ? `\n${failures} negative test(s) FAILED` : "\nAll negative tests passed — every rule has been seen to fire.");
 process.exit(failures ? 1 : 0);

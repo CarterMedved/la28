@@ -130,11 +130,41 @@ export const hygiene: Rule = ({ ds }) => {
  * better") are deliberately NOT matched: the net is ordinals plus
  * "N rating point(s)" (digits or words), which is why this is best-effort,
  * never proof of cleanliness. WARN, aggregate.
+ *
+ * TABLE ANCHORS ARE DATE-CHECKED: "On the 25 Jul 2026 table" on a women's
+ * cut whose Standings are as_of 2026-08-01 certifies a stale number — worse
+ * than no anchor. The anchor cannot be derived into the cell (that would be
+ * a formula, banned by hygiene/formula-cells), so a human types it and this
+ * rule verifies it: the row resolves to a ranking (cuts.ranking_id; links
+ * via gate_ranking_id, else cut_line_id → cut), and the anchor date must
+ * equal that ranking's unique Standings as_of. Non-table anchors ("13th on
+ * 30 Jun, the window's first day" — a historical claim, not a current-table
+ * snapshot) still exempt the field but are not as_of-checked. Rows that
+ * resolve to no ranking, or to standings without a single as_of, are not
+ * checkable — a limitation, not a pass.
  */
 export const proseUnanchoredSnapshot: Rule = ({ ds }) => {
   const ORD = /\b\d{1,2}(?:st|nd|rd|th)\b/g;
   const RATING = /\b(?:\d+|(?:twenty|thirty|forty|fifty)(?:-\w+)?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)\s+rating\s+points?\b/gi;
   const ANCHOR = /\bon\s+(?:the\s+)?\d{1,2}\s+[A-Za-z]{3,9}(?:\s+\d{4})?\b/i;
+  const TABLE_ANCHOR = /\bon the (\d{1,2}) ([A-Za-z]{3,9}) (\d{4}) table\b/gi;
+  const MONTHS: Record<string, string> = { jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12" };
+
+  const cutRanking: Record<string, string> = {};
+  for (const c of ds.cuts) if (c.cut_line_id != null && c.ranking_id != null)
+    cutRanking[String(c.cut_line_id)] = String(c.ranking_id);
+  const asOf: Record<string, Set<string>> = {};
+  for (const s of ds.standings) if (s.ranking_id != null && s.as_of != null)
+    (asOf[String(s.ranking_id)] ??= new Set()).add(String(s.as_of).slice(0, 10));
+  const rankingOf = (tab: string, row: Record<string, unknown>): string | null => {
+    if (tab === "cuts") return row.ranking_id == null ? null : String(row.ranking_id);
+    if (tab === "links") return row.gate_ranking_id != null ? String(row.gate_ranking_id)
+      : row.cut_line_id != null ? cutRanking[String(row.cut_line_id)] ?? null : null;
+    if (tab === "qualified") return row.qualified_via != null && asOf[String(row.qualified_via)] ? String(row.qualified_via) : null;
+    return null;
+  };
+
   const FIELDS: [keyof typeof idOf, Row[], string[]][] = [
     ["links", ds.links, ["criterion", "eligibility_note", "entry_condition", "berth_math", "qualifiers_note", "notes"]],
     ["cuts", ds.cuts, ["name", "label", "notes"]],
@@ -146,16 +176,30 @@ export const proseUnanchoredSnapshot: Rule = ({ ds }) => {
       for (const c of cols) {
         const v = (row as Record<string, unknown>)[c];
         if (v == null || typeof v !== "string") continue;
+        // Table anchors first: a wrong-dated anchor is its own finding and
+        // must not buy the field an exemption.
+        let anchorWrong = false;
+        for (const m of v.matchAll(TABLE_ANCHOR)) {
+          const iso = `${m[3]}-${MONTHS[m[2].slice(0, 3).toLowerCase()] ?? "??"}-${m[1].padStart(2, "0")}`;
+          const rid = rankingOf(tab, row as Record<string, unknown>);
+          const known = rid ? asOf[rid] : undefined;
+          if (known && known.size === 1 && !known.has(iso)) {
+            anchorWrong = true;
+            hits.push(`${String(idOf[tab](row as never))}·${c}: table anchor "${m[0]}" but ${rid} standings are as_of ${[...known][0]}`);
+          }
+        }
+        if (anchorWrong) continue;              // already reported; don't double-list its ordinals
         if (ANCHOR.test(v)) continue;
         const found = [...v.matchAll(ORD), ...v.matchAll(RATING)].map(m => m[0]);
         if (found.length) hits.push(`${String(idOf[tab](row as never))}·${c}: [${found.join(", ")}]`);
       }
   if (!hits.length) return [];
   return [finding("WARN", "hygiene/prose-unanchored-snapshot", ds.sheetNameOf.links, "(aggregate)",
-    `${hits.length} prose field(s) carry a rank ordinal or rating margin with no dated anchor. A number typed ` +
-    `into prose duplicates Standings and goes stale silently (cri-007 said 20th while Standings said 19). ` +
-    `Either remove it (the app derives positions) or anchor it ("On the <date> table: …") so it states its own ` +
-    `staleness. Best-effort net — rule constants like "top 15" are not matched:\n      ${hits.join("\n      ")}`)];
+    `${hits.length} prose field(s) carry a rank ordinal or rating margin with no dated anchor, or a table ` +
+    `anchor whose date does not match the ranking's Standings as_of. A number typed into prose duplicates ` +
+    `Standings and goes stale silently (cri-007 said 20th while Standings said 19); a wrong-dated anchor is ` +
+    `worse — it certifies the stale number. Either remove it (the app derives positions) or anchor it ` +
+    `("On the <as_of date> table: …"). Best-effort net — rule constants like "top 15" are not matched:\n      ${hits.join("\n      ")}`)];
 };
 
 export const formulaCellsRule: Rule = ({ ds }) => {
