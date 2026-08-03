@@ -110,7 +110,7 @@ export const hygiene: Rule = ({ ds }) => {
 };
 
 /**
- * No formulas in the published workbook (docs/stage-four.md, 4 Aug 2026):
+ * No formulas in the published workbook (docs/stage-four.md, 3 Aug 2026):
  * a Google Sheet RECALCULATES on import, so any formula is live data that
  * mutates outside the gate — the sheet stores declared facts, code derives
  * everything else. Measured on v21's upload: 461 formula cells in three

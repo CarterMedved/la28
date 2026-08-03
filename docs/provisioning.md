@@ -1,6 +1,6 @@
 # Provisioning runbook: Sheets → CI → Pages (stage four goes live)
 
-*Written 4 Aug 2026. The workflow stays `.github/workflows/publish.yml.disabled`
+*Written 3 Aug 2026. The workflow stays `.github/workflows/publish.yml.disabled`
 until every step here is done and the owner deliberately renames it — the
 rename is the switch, and the file's header says what happens the moment it
 flips. Constraints that govern everything below: secret-holding workflows
@@ -52,7 +52,7 @@ From the new Sheet: **File → Download → Microsoft Excel (.xlsx)**, save as
    on date-typed cells — the toStamp bug came from a number format, so
    formats ARE content here). It prints both file sha256s for the
    record and exits 1 with a full enumeration on any difference.
-   **MEASURED 4 Aug 2026, and the byte delta is NOT compression or
+   **MEASURED 3 Aug 2026, and the byte delta is NOT compression or
    mtimes:** Google RE-SERIALISES the sheet XML between exports — 11 zip
    entries had different CRC-32s and 9 had different uncompressed XML
    sizes (deltas both directions, net −45 bytes) with zero differing
@@ -113,7 +113,7 @@ Rename: `git mv .github/workflows/publish.yml.disabled
   makes the next pull fail closed at token exchange; the site keeps
   serving the last artefact.
 
-## Preflight-failure fix sequence (established 4 Aug 2026)
+## Preflight-failure fix sequence (established 3 Aug 2026)
 
 When the preflight finds a workbook defect (as it did: the formula
 columns), the fix goes **LOCAL FIRST, then re-upload, then full

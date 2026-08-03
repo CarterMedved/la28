@@ -38,7 +38,7 @@ const dataBlock = ds => ({
 /**
  * Content identity: sha256 of the normalised data block — what data.json
  * carries, not the container bytes. Google's xlsx export is byte-UNSTABLE
- * on unchanged content (measured 4 Aug 2026: two exports of an untouched
+ * on unchanged content (measured 3 Aug 2026: two exports of an untouched
  * sheet differed in sha256 and size, zero differing cells), so raw-bytes
  * identity would republish daily for no change. Content drives the SKIP
  * decision, the archive key and the bootstrap digest; the raw workbook

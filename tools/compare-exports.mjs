@@ -1,7 +1,7 @@
 /**
  * Preflight §B4: double-export comparison at the level that matters —
  * CELL VALUES and NUMBER FORMATS, never zip structure. Google re-serialises
- * the sheet XML between exports (measured 4 Aug 2026: differing CRC-32s and
+ * the sheet XML between exports (measured 3 Aug 2026: differing CRC-32s and
  * raw XML sizes with zero differing cells/formats), so the two files'
  * sha256s are EXPECTED to differ; they are printed for the record as the
  * trigger for the dual-hash design, never as a diagnosis.

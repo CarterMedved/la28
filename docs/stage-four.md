@@ -6,8 +6,8 @@ fetch branch + bundle invariant; CI skeleton (`tools/pull-workbook.mjs`
 with per-run reach logging, `tools/pull-gate.mjs`, `tools/ci-publish.mjs`,
 `.github/workflows/publish.yml`, proven by `test/ci-gate.mjs`); provenance
 strip + audit artefact block (proven in `test/render-app.mjs`). Repo is
-PUBLIC on GitHub (CarterMedved/la28, decision 4 Aug 2026 — see PLAN
-BOUNDARY in §2); archive job built 4 Aug 2026 (two-job split in
+PUBLIC on GitHub (CarterMedved/la28, decision 3 Aug 2026 — see PLAN
+BOUNDARY in §2); archive job built 3 Aug 2026 (two-job split in
 `publish.yml.disabled`, branch-baseline preference in `ci-publish.mjs`,
 proven in `test/ci-gate.mjs`). OPEN: provisioning and the first real
 run — runbook with BLOCKING Sheets preflight in `docs/provisioning.md`;
@@ -71,7 +71,7 @@ What enforces it (not memory):
   composition delta the reporting signal — totals are noise, keys are
   signal. (The summary also moves when validator code or suppressions
   change — same workbook, same date, different verdict must publish.)
-  **DUAL-HASH (measured 4 Aug 2026, implemented same day):** Google's
+  **DUAL-HASH (measured 3 Aug 2026, implemented same day):** Google's
   xlsx export is byte-UNSTABLE on unchanged content — two exports of an
   untouched Sheet differed in sha256 and size (120,570 vs 120,615 bytes)
   with zero differing cells — so raw-bytes identity would republish daily
@@ -243,7 +243,7 @@ one unacked gated change could publish. Options weighed:
   sequence if ever wanted: set repo-local noreply identity in every other
   repo first, then enable the block.
 
-  **PLAN BOUNDARY — RESOLVED (4 Aug 2026): la28 is PUBLIC.** Rulesets and
+  **PLAN BOUNDARY — RESOLVED (3 Aug 2026): la28 is PUBLIC.** Rulesets and
   branch protection require a public repo or a paid plan on GitHub Free,
   and so does Pages — the boundary governed both halves of stage four.
   Decision: public (option a). **Pro was rejected because its security
@@ -268,7 +268,7 @@ one unacked gated change could publish. Options weighed:
   a human must verify them on the repo's Rules page and re-verify if the
   repo is migrated or forked.
 
-  **HARD CONSTRAINT — public repo + secrets (4 Aug 2026): any workflow
+  **HARD CONSTRAINT — public repo + secrets (3 Aug 2026): any workflow
   that can read secrets uses ONLY `schedule` and `workflow_dispatch`
   triggers. NEVER `pull_request`, and NEVER `pull_request_target`.** On a
   public repo, a fork's pull request runs foreign code; `pull_request` on
@@ -291,7 +291,7 @@ one unacked gated change could publish. Options weighed:
   branch is therefore a durability improvement, not the thing holding
   the invariant up.
 
-  **NO FORMULAS IN THE PUBLISHED WORKBOOK (general rule, 4 Aug 2026).** A
+  **NO FORMULAS IN THE PUBLISHED WORKBOOK (general rule, 3 Aug 2026).** A
   Google Sheet RECALCULATES on import: any formula becomes live data the
   pipeline pulls, mutating outside the gate. Measured on v21's upload:
   461 formula cells across three self-check columns, 288 of them with

@@ -13,7 +13,7 @@
  *   fit_to_publish:false runs exist in the archive corpus (§4).
  * - Skip-check: publish is skipped only when workbook CONTENT sha (the
  *   normalised data block — raw bytes are export-unstable, measured
- *   4 Aug 2026) AND the rules map ({rule_key: count}, deep) are BOTH
+ *   3 Aug 2026) AND the rules map ({rule_key: count}, deep) are BOTH
  *   unchanged vs the last published run. Never compares E/W/I totals.
  * - Round-trip: test/data-roundtrip.mjs --ci against the pulled workbook —
  *   the only guard on the artefact itself, between emit and publish.
@@ -51,7 +51,7 @@ try { rmSync(`${STATE}/publish-happened`); } catch { /* absent is the normal cas
 
 const sha256 = buf => createHash("sha256").update(buf).digest("hex");
 const wbSha = sha256(readFileSync(WB));
-// Content identity (dual-hash, measured 4 Aug 2026 — Google's export is
+// Content identity (dual-hash, measured 3 Aug 2026 — Google's export is
 // byte-unstable on unchanged content): contentSha drives skip / archive
 // key / bootstrap; wbSha keeps exactly one job, the baseline integrity
 // check, whose two sides never cross an export boundary.
