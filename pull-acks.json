@@ -5,6 +5,11 @@
       "digest": "8d9474770bf4e74cf071b478851627fb526c60cea9d4f0774cbbc7838e20dd67",
       "note": "bootstrap: first publish — no prior baseline exists; content 267ee72d verified against both preflight exports",
       "date": "2026-08-03"
+    },
+    {
+      "digest": "bde348a07f6f855304c892a927920a07e3f79536d799e886ec23244493e2fde5",
+      "note": "prose sweep: remove current-table numbers duplicated from Standings, fix USA women 20th->19th, drop two false superlatives, correct Scotland's effect on the women's cut, name the counted order",
+      "date": "2026-08-04"
     }
   ]
 }
