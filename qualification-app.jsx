@@ -241,17 +241,11 @@ function Provenance({ meta }) {
   );
 }
 
-function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
-  const DATA = data;
-  const [view, setView] = useState("pathway");
-  const [sel, setSel] = useState(() => (data.events?.[0]?.olympic_event_id) ?? null);
-  const [openNote, setOpenNote] = useState(null);
-  const [openComp, setOpenComp] = useState(null);
-  const [sportFilter, setSportFilter] = useState("All");
-  const [calMode, setCalMode] = useState("events");
-  const [openFx, setOpenFx] = useState(null);
-
-  const idx = useMemo(() => {
+// Index builder — extracted from Explorer so the sentence engine, the
+// harnesses and the card-model script derive from it without rendering.
+// Pure: DATA in, derived index out (no hooks, no component state).
+export function buildIndex(DATA) {
+  {
     const node = {};
     (DATA.events||[]).forEach(e => node[e.olympic_event_id] = { ...e, kind: "EVENT", label: e.event_name });
     (DATA.comps||[]).forEach(c => node[c.competition_id] = { ...c, kind: "COMP", label: c.name });
@@ -430,8 +424,260 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
       (DATA.fx || []).map(f => ({ competition_id: f[0], stage: f[4] })));
     const placement = (compId, stage) => placementVerdict(compId, stage, pctx);
 
-    return { node, inbound, outbound, hops, fxCount, fxByComp, berthSum, rankById, windowState, route, standBy, cutsBy, thresholds, blocked, capturedDepth, teamKey, fixtureVerdict, placement };
-  }, [DATA]);
+    const idx = { node, inbound, outbound, hops, fxCount, fxByComp, berthSum, rankById, windowState, route, standBy, cutsBy, thresholds, blocked, capturedDepth, teamKey, fixtureVerdict, placement };
+    idx.cardModel = f => fixtureCardModel(idx, DATA, f);
+    return idx;
+  }
+}
+
+// ---------- fixture-card sentence engine (layer 1 of the card) ----------
+// Every slot in every template is a module-derived value: thresholds,
+// standings, the link graph, the HOST allocation, and (when filled) the
+// structured condition columns. No free text enters a sentence.
+
+// One shared date formatter — deadlines must not render as raw ISO in prose.
+export const fmtDay = (iso) => {
+  const m = String(iso ?? "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return String(iso ?? "");
+  const M = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${Number(m[3])} ${M[Number(m[2])]} ${m[1]}`;
+};
+
+/**
+ * Contention bands — POLICY, documented in README ("Contention bands").
+ * Validated against every margin the workbook itself passes judgment on:
+ * 3 and 3 (recorded as live contests), 11 ("nearest challenger") and 19
+ * ("the live contest") fall inside CONTENDING; 39 ("expected to fall
+ * through") falls outside. 25 is also the continental-contention
+ * precedent already in fixtureVerdict. Pending observed rating-volatility
+ * data, these stay coarse deliberately.
+ */
+export const CONTENTION = { AT_STAKE_MAX_PLACES: 3, CONTENDING_MAX_RATING: 25 };
+
+// Structured condition vocabulary. UNRECOGNISED VALUES FAIL CLOSED to the
+// marker form — the enum will grow with ~46 sports left, and a value the
+// template doesn't know must degrade to "conditional; see how it works",
+// never to a flattened sentence.
+const KNOWN_TRIGGERS = {
+  HOST_WINS: (host) => `if ${host} win the tournament`,
+  HOST_IN_SEMIS: (host) => `if ${host} reach the semi-finals`,
+};
+const KNOWN_RECIPIENTS = {
+  RUNNER_UP: { clause: "the berth passes to the losing finalist", definite: true },
+  NEXT_ELIGIBLE: { clause: "the berth passes to the next eligible team", definite: true },
+  // Which placings convert depends on the draw — deliberately NOT definite:
+  // fbl-012 stays marker-form even fully filled, until the draw resolves it.
+  OTHER_SEMIFINALISTS: { clause: "which placings convert to berths changes", definite: false },
+};
+
+// What proves conditional prose is ABSENT rather than merely unparsed:
+// nothing can — criterion is free text. So the guard fails toward the
+// marker: any non-null eligibility_note or entry_condition, or a criterion
+// carrying conditional-shaped language, marks the edge conditional. The
+// unconditional sentence is reachable ONLY when all three are clean and
+// the condition columns are empty.
+const CONDITIONAL_SHAPE = /\bshould\b|\bunless\b|\bif\b|\bconditional\b|already qualified|runner[- ]up|\binstead\b|passes to/i;
+
+export function conditionState(edge, hostName) {
+  const t = edge?.condition_trigger == null ? null : String(edge.condition_trigger).trim().toUpperCase() || null;
+  const r = edge?.condition_recipient == null ? null : String(edge.condition_recipient).trim().toUpperCase() || null;
+  const prose = !!(edge?.eligibility_note || edge?.entry_condition ||
+    CONDITIONAL_SHAPE.test(String(edge?.criterion ?? "")));
+  if (t == null && r == null) return prose ? { kind: "marker" } : { kind: "none" };
+  const trig = t != null ? KNOWN_TRIGGERS[t] : null;
+  const rec = r != null ? KNOWN_RECIPIENTS[r] : null;
+  if (!trig || !rec) return { kind: "marker" };            // half-filled, garbage, unknown: fail closed
+  if (!rec.definite) return { kind: "marker", trigger: trig(hostName ?? "the hosts") };
+  return { kind: "structured", clause: `${trig(hostName ?? "the hosts")}, ${rec.clause}`, trigger: t, recipient: r };
+}
+
+// Shortest direct (non-ranking) route from a competition to an Olympic
+// event, as link rows. BFS over outbound placement edges.
+export function shortestDirectRoute(idx, compId) {
+  const seen = new Set([compId]);
+  let frontier = [{ id: compId, path: [] }];
+  for (let d = 0; d < 8 && frontier.length; d++) {
+    const next = [];
+    for (const { id, path } of frontier) {
+      for (const l of (idx.outbound[id] || [])) {
+        if (l.relationship === "RANKING_POINTS") continue;
+        if (l.to_type === "OLYMPIC_EVENT") return [...path, l];
+        if (seen.has(l.to_id)) continue;
+        seen.add(l.to_id);
+        next.push({ id: l.to_id, path: [...path, l] });
+      }
+    }
+    frontier = next;
+  }
+  return null;
+}
+
+// Host already inside the field for an event? Derived from the HOST_*
+// allocation links, never from prose. Returns a reader name or null.
+export function hostInField(idx, eventId) {
+  const hostLink = (idx.inbound[eventId] || []).find(l => /^HOST_/.test(String(l.from_id)) && Number(l.berths) > 0);
+  if (!hostLink) return null;
+  const code = String(hostLink.from_id).replace(/^HOST_/, "");
+  return code === "USA" ? "the USA" : code;
+}
+
+// Per-team ranking facts against every locatable line of the comp's ranking.
+function rankTeamFacts(idx, rid, team) {
+  const rows = idx.standBy[rid] || [];
+  const r = rows.find(x => idx.teamKey(x.team) === idx.teamKey(team));
+  if (!r) return null;
+  if (r.already_qualified === "Y") return { team: r.team, state: "qualified" };
+  if (r.provisional === "Y") return { team: r.team, state: "holds", rank: r.rank };
+  let nearest = null;
+  for (const t of (idx.thresholds[rid] || [])) {
+    if (t.appliesTo) {
+      const only = String(t.appliesTo).split(",").map(x => idx.teamKey(x.trim()));
+      if (!only.includes(idx.teamKey(r.team))) continue;
+    }
+    const edge = rows.find(x => x.rank === t.atRank);
+    const gapRating = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
+    const gapPlaces = Math.abs(r.rank - t.atRank);
+    const cand = { cut: t.cut, atRank: t.atRank, edgeTeam: edge?.team ?? null, gapRating, gapPlaces,
+      holder: t.cut.rule === "PROVISIONAL_HOLDER" ? edge?.team ?? null : null, inside: r.rank <= t.atRank };
+    if (!nearest || (cand.gapRating ?? 1e9) < (nearest.gapRating ?? 1e9)) nearest = cand;
+  }
+  if (!nearest) return { team: r.team, state: "noline" };
+  const band = nearest.gapRating != null
+    ? (nearest.gapRating <= CONTENTION.CONTENDING_MAX_RATING ? "contending" : "far")
+    : (nearest.gapPlaces <= CONTENTION.AT_STAKE_MAX_PLACES ? "contending" : "far");
+  return { team: r.team, state: "chasing", band, ...nearest };
+}
+
+const stageNoun = (stage) => /series/i.test(String(stage ?? "")) ? "series"
+  : /window|round[- ]robin/i.test(String(stage ?? "")) ? "round" : "game";
+
+const winsToTitle = (stage) => {
+  const s = String(stage ?? "").toLowerCase();
+  if (/final\b/.test(s) && !/semi|quarter/.test(s)) return 1;
+  if (/semi/.test(s)) return 2;
+  if (/quarter/.test(s)) return 3;
+  if (/round of 16|last 16/.test(s)) return 4;
+  return null;
+};
+
+/**
+ * The card model: sentence (layer 1), how-it-works lines (layer 2), route
+ * steps (layer 3 uses the existing trace), verbatim quotes (layer 4).
+ * The sentence is assembled ONLY from the fields of `facts` — templates
+ * below — so what it derives from is exactly what this function collects.
+ */
+export function fixtureCardModel(idx, DATA, f) {
+  const [compId, date, t1, t2, stage] = [f[0], f[1], f[2], f[3], f[4]];
+  const comp = idx.node[compId];
+  const route = idx.route[compId] || { kind: "NONE" };
+  const how = [];
+  const quotes = [];
+  const pushQuote = (id, field, text) => { if (text) quotes.push({ id, field, text: String(text) }); };
+
+  // ---- ranking side ----
+  let rankSentence = null, rankLevel = "none";
+  const rid = (route.rankings || []).map(r => r.ranking_id).find(r => (idx.standBy[r] || []).length) ?? null;
+  if (rid) {
+    const eventId = idx.rankById[rid]?.feeds_id;
+    const eventName = idx.node[eventId]?.event_name ?? eventId;
+    const facts = [t1, t2].map(t => rankTeamFacts(idx, rid, t)).filter(Boolean);
+    const contending = facts.filter(x => x.state === "chasing" && x.band === "contending");
+    const far = facts.filter(x => x.state === "chasing" && x.band === "far");
+    const qual = facts.filter(x => x.state === "qualified");
+    const noun = stageNoun(stage);
+    if (contending.length) {
+      rankLevel = "live";
+      const p = contending.sort((a, b) => (a.gapRating ?? 1e9) - (b.gapRating ?? 1e9))[0];
+      const close = fmtDay(p.cut.deadline);
+      const main = p.holder
+        ? `${p.team} can close on ${p.holder}, who hold the ${eventName} place — ${p.gapRating} rating points, table closes ${close}.`
+        : p.inside
+          ? `${p.team} holds a qualifying position — ${p.gapRating != null ? `${p.gapRating} rating points clear of the line` : `${p.gapPlaces} places clear of the line`}, table closes ${close}.`
+          : `${p.team} is ${p.gapRating != null ? `${p.gapRating} rating points` : `${p.gapPlaces} places`} off the last qualifying position, table closes ${close}.`;
+      const rest = [
+        ...far.map(x => `${x.team} are too far back for this ${noun} to change their position.`),
+        ...qual.map(x => `${x.team} have already qualified.`),
+        ...contending.slice(1).map(x => `${x.team} are also in contention, ${x.gapRating} rating points from the line.`),
+      ];
+      rankSentence = [main, ...rest].join(" ");
+      how.push(p.holder
+        ? `The place isn't settled: it belongs to whoever is the highest-ranked team not already qualified when the table closes. This ${noun} moves rating points, not places directly.`
+        : `Places go by ranking position when the table closes. This ${noun} moves rating points, not places directly.`);
+      const cut = (DATA.cuts || []).find(c => c.cut_line_id === p.cut.cut_line_id);
+      pushQuote(p.cut.cut_line_id, "notes", cut?.notes);
+    } else if (facts.length) {
+      rankSentence = qual.length === facts.length
+        ? `${qual.map(x => x.team).join(" and ")} ${qual.length > 1 ? "have" : "has"} already qualified — nothing here changes who goes.`
+        : `Neither side is near a qualifying line — this ${stageNoun(stage)} moves ranking points only.`;
+      how.push(`Qualification from this ranking is decided at its cut-off; today's gaps are wider than the contention band (README: contention bands).`);
+    }
+  }
+
+  // ---- placement side ----
+  let placeSentence = null;
+  const path = shortestDirectRoute(idx, compId);
+  if (path) {
+    const berthEdge = path[path.length - 1];
+    const eventName = idx.node[berthEdge.to_id]?.event_name ?? berthEdge.to_id;
+    const host = hostInField(idx, berthEdge.to_id);
+    const cond = conditionState(berthEdge, host);
+    const wins = winsToTitle(stage);
+    const downstream = path.length - 1;
+    const berthComp = idx.node[berthEdge.from_id]?.label ?? berthEdge.from_id;
+    const isGroup = /group|matchday/i.test(String(stage ?? ""));
+    for (const l of path) {
+      pushQuote(l.link_id, "criterion", l.criterion);
+      pushQuote(l.link_id, "entry_condition", l.entry_condition);
+      pushQuote(l.link_id, "eligibility_note", l.eligibility_note);
+      pushQuote(l.link_id, "berth_math", l.berth_math);
+    }
+    const condClause = cond.kind === "structured"
+      ? ` But ${host} are already in as hosts, so ${cond.clause}.`
+      : cond.kind === "marker"
+        ? (host ? ` But ${host} are already in as hosts, so who receives it is conditional — see how it works.`
+                : ` Who receives it is conditional — see how it works.`)
+        : "";
+    if (wins != null && downstream === 0) {
+      placeSentence = `${wins} win${wins === 1 ? "" : "s"} from an Olympic place.` +
+        (cond.kind === "none" ? " The tournament winner takes it." : condClause);
+    } else if (isGroup && downstream === 0) {
+      placeSentence = `Doesn't decide a place by itself — the group sets the knockout bracket, and the title carries ${eventName}'s berth${Number(berthEdge.berths) === 1 ? "" : "s"}.` + condClause;
+    } else if (isGroup) {
+      placeSentence = `Doesn't decide a place. The group only sets the bracket — berths are ${downstream} round${downstream === 1 ? "" : "s"} away, at ${berthComp}.`;
+    } else if (downstream > 0) {
+      placeSentence = `Part of a longer road: berths are ${downstream} round${downstream === 1 ? "" : "s"} away, at ${berthComp}.`;
+    } else {
+      placeSentence = `This competition awards ${eventName}'s place${Number(berthEdge.berths) === 1 ? "" : "s"} directly.` + condClause;
+    }
+    how.push(path.map(l => {
+      const n = Number(l.berths) > 0 ? `${l.berths} place${Number(l.berths) === 1 ? "" : "s"}` :
+        Number(l.qualifiers) > 0 ? `${l.qualifiers} advance` : "advancement";
+      return `${n} → ${idx.node[l.to_id]?.event_name ?? idx.node[l.to_id]?.label ?? l.to_id}`;
+    }).join("; ") + ".");
+    if (cond.kind === "structured") how.push(`The winner may not receive the berth: ${cond.clause} (structured condition on ${berthEdge.link_id}).`);
+    if (cond.kind === "marker") how.push(`A recipient condition applies on the final step — the exact rule is quoted in the sheet text below.`);
+  }
+
+  const sentence = rankSentence && placeSentence ? `${rankSentence} ${placeSentence}`
+    : rankSentence ?? placeSentence
+    ?? `No qualification route is mapped from this competition yet.`;
+  return { sentence, how, quotes, rankLevel, compLabel: comp?.label ?? compId, date, teams: [t1, t2], stage };
+}
+
+function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
+  const DATA = data;
+  const [view, setView] = useState("pathway");
+  const [sel, setSel] = useState(() => (data.events?.[0]?.olympic_event_id) ?? null);
+  const [openNote, setOpenNote] = useState(null);
+  const [openComp, setOpenComp] = useState(null);
+  const [sportFilter, setSportFilter] = useState("All");
+  const [calMode, setCalMode] = useState("events");
+  const [openFx, setOpenFx] = useState(null);
+  // Evidence mode (global audit toggle): expands every "Sheet text
+  // (verbatim)" layer and reveals the internal verdict blocks on cards.
+  const [evidence, setEvidence] = useState(false);
+
+  const idx = useMemo(() => buildIndex(DATA), [DATA]);
 
   const orphans = (DATA.comps||[]).filter(c => !(idx.outbound[c.competition_id] || []).length);
   const linked = (DATA.comps||[]).length - orphans.length;
@@ -456,13 +702,16 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
         .find(p => p.type === "timeZoneName")?.value ?? zone;
     } catch { return zone; }   // unrecognised zone string: show it verbatim, never hide it
   };
+  // Two marks, one register, defined once in the Calendar legend:
+  // "·?" = time as entered, zone unverified; "—" = no time recorded.
+  // ("TBC" implied a confirmation is coming, which no data tracks.)
   const Time = ({ value, zone, width = 52 }) => {
     const { day, time, known } = parseWhen(value);
     return (
       <span style={{ font: `500 11.5px/1 ${MONO}`, width, flexShrink: 0, color: known ? C.ink : C.muted }}>
-        {known ? time : "TBC"}
+        {known ? time : "—"}
         {known && <span style={{ font: `400 9px/1 ${MONO}`, color: C.muted, marginLeft: 4 }}>
-          {zone ? zoneAbbrev(zone, day) : "zone?"}</span>}
+          {zone ? zoneAbbrev(zone, day) : "·?"}</span>}
       </span>
     );
   };
@@ -583,7 +832,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     </div>
   );
 
-  function PathwayTrace({ compId, teams }) {
+  function PathwayTrace({ compId, teams, quotes = true }) {
     const routes = routesToBerth(compId).sort((a, b) => a.length - b.length);
     const here = idx.node[compId];
     if (!routes.length) return <Empty text="No route to an Olympic berth from here yet." />;
@@ -600,7 +849,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
         </div>
       </div>
     );
-    const Step = ({ l, teams }) => {
+    const Step = ({ l, teams, quotes = true }) => {
       const n = l.relationship === "REALLOCATION" ? "reallocated place"
               : l.berths ? `${l.berths} berth${l.berths === 1 ? "" : "s"}`
               : l.qualifiers ? `${l.qualifiers} advance`
@@ -615,13 +864,13 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
             <div style={{ font: `500 11px/1.3 ${MONO}`, color: l.entry_condition ? C.open : l.confidence === "AMBIGUOUS" ? C.fault : C.brass }}>
               ↓ {l.entry_condition ? "fallback route · " : ""}{n}
             </div>
-            {l.entry_condition && (
+            {quotes && l.entry_condition && (
               <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.open, marginTop: 3,
                 padding: "6px 9px", background: "#A8761A0E", borderLeft: `2px solid ${C.open}`, borderRadius: "0 3px 3px 0" }}>
                 {l.entry_condition}
               </div>
             )}
-            {l.eligibility_note && (
+            {quotes && l.eligibility_note && (
               <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.ink, marginTop: 3,
                 padding: "6px 9px", background: "#9A6F300E", borderLeft: `2px solid ${C.brass}`, borderRadius: "0 3px 3px 0" }}>
                 <span style={{ font: `500 9.5px/1 ${MONO}`, color: C.brass, letterSpacing: ".08em",
@@ -630,7 +879,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
               </div>
             )}
             <StepStanding link={l} teams={teams} />
-            {l.berth_math && (
+            {quotes && l.berth_math && (
               <div style={{ marginTop: 4, padding: "6px 9px", background: "#147D5C0C",
                 borderLeft: `2px solid ${C.live}`, borderRadius: "0 3px 3px 0" }}>
                 <span style={{ font: `500 9.5px/1 ${MONO}`, color: C.live, letterSpacing: ".08em",
@@ -638,7 +887,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                 <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.muted, marginTop: 4 }}>{l.berth_math}</div>
               </div>
             )}
-            <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.muted, marginTop: 2 }}>{l.criterion}</div>
+            {quotes && <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.muted, marginTop: 2 }}>{l.criterion}</div>}
             {l.confidence === "AMBIGUOUS" &&
               <div style={{ font: `400 11px/1.4 ${SANS}`, color: C.fault, marginTop: 2 }}>Ambiguous in the source document.</div>}
           </div>
@@ -648,10 +897,6 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
 
     return (
       <div style={{ display: "grid", gap: 12 }}>
-        <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.muted }}>
-          {routes.length === 1 ? "One route" : `${routes.length} routes`} from here to a berth
-          {regionOf(compId) ? `, all within ${regionOf(compId)}` : ""}. Shortest first.
-        </div>
         {routes.slice(0, 8).map((r, ri) => (
           <div key={ri} style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "13px 15px" }}>
             <div style={{ font: `500 10px/1 ${MONO}`, color: C.muted, letterSpacing: ".09em",
@@ -665,7 +910,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
               const isEnd = l.to_type === "OLYMPIC_EVENT";
               return (
                 <React.Fragment key={l.link_id}>
-                  <Step l={l} teams={teams} />
+                  <Step l={l} teams={teams} quotes={quotes} />
                   <Node
                     label={tgt?.event_name || tgt?.label || l.to_id}
                     sub={isEnd ? `${tgt?.quota_total} team field` : tgt?.confederation && tgt.confederation !== "GLOBAL" ? tgt.confederation : (tgt?.format || "")}
@@ -679,6 +924,25 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
       </div>
     );
   }
+
+  // Collapsible card layer. Collapsed by default; `open` (evidence mode)
+  // forces it open without stealing the local toggle.
+  const Fold = ({ label, open, children }) => {
+    const [o, setO] = useState(false);
+    const isOpen = open || o;
+    return (
+      <div style={{ marginBottom: 6 }}>
+        <button onClick={() => setO(!o)} style={{ font: `500 11px/1 ${MONO}`, color: C.muted,
+          letterSpacing: ".06em", background: "none", border: "none", cursor: "pointer", padding: "3px 0" }}>
+          {isOpen ? "▾" : "▸"} {label}
+        </button>
+        {isOpen && (
+          <div style={{ padding: "8px 11px", background: C.card, border: `1px solid ${C.rule}`,
+            borderRadius: 4, marginTop: 3 }}>{children}</div>
+        )}
+      </div>
+    );
+  };
 
   const Chip = ({ tone, children }) => (
     <span style={{
@@ -986,7 +1250,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     return (
       <div>
         <SectionLabel n="—" text="Fixtures"
-          sub={`${dated.length} games across ${days.length} days${undated.length ? `, plus ${undated.length} awaiting dates` : ""}. Each row shows its round and exactly what the parent competition is worth. ${noTime} have no time in the source and show TBC; times are as recorded, with no timezone applied. Stages marked DERIVED were inferred from the fixture pattern, not read off an official schedule.`} />
+          sub={`${dated.length} games across ${days.length} days${undated.length ? `, plus ${undated.length} awaiting dates` : ""}. Open a row for what the game means. Times: "18:30 ·?" is the time as entered from its source with the zone unverified; "—" means no time recorded (${noTime} such). Stages marked DERIVED were inferred from the fixture pattern, not read off an official schedule.`} />
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14, padding: "10px 13px",
           background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4 }}>
           {[[C.rank, "Ranking event — results move rating points, nobody advances"],
@@ -1064,25 +1328,50 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                     <Chip>{c.sport || "?"}</Chip>
                     {f[5] === "UNKNOWN" && <Chip tone="fault">stage unknown</Chip>}
                     {(() => {
+                      // Reader-worded status, one chip, only when something is at
+                      // stake or the data can't say (fault tones = data problems,
+                      // never sporting distance — see README contention bands).
                       const v = idx.fixtureVerdict(f[0], f[2], f[3], f[1]);
-                      if (!v) return null;
-                      const map = { live: ["live", "rank"], low: ["low impact", undefined],
-                                    none: ["no impact", "fault"], unknown: ["impact unknown", "fault"] };
-                      const [label, tone] = map[v.level];
-                      return <Chip tone={tone}>{v.level === "live" ? "◉ " : ""}{label}</Chip>;
+                      if (v?.level === "unknown") return <Chip tone="fault">can't assess</Chip>;
+                      const m = idx.cardModel(f);
+                      if (m.rankLevel === "live" || /wins? from an Olympic place/.test(m.sentence))
+                        return <Chip tone="live">◉ qualification at stake</Chip>;
+                      return null;
                     })()}
-                    {(() => {
-                      const p = idx.placement(f[0], f[4]);
-                      if (!p) return null;
-                      const tone = p.level === "live" ? "rank" : p.level === "unresolved" ? "fault" : undefined;
-                      return <Chip tone={tone}>{p.level === "live" ? "◉ " : ""}{p.chip}</Chip>;
-                    })()}
-                    <Stakes compId={f[0]} showHops={false} />
-                    {out.length > 0 && <Chip tone="open">{shown ? "▾" : "▸"} full pathway</Chip>}
+                    {out.length > 0 && <Chip tone="open">{shown ? "▾" : "▸"} details</Chip>}
                   </div>
-                  {shown && (
+                  {shown && (() => {
+                    const m = idx.cardModel(f);
+                    return (
                     <div style={{ margin: "5px 0 9px 12px", paddingLeft: 12, borderLeft: `2px solid ${C.rule}` }}>
-                      {(() => {
+                      {/* Layer 1 — the sentence. Plain language, no ids. */}
+                      <div style={{ padding: "11px 13px", background: C.card, border: `1px solid ${C.rule}`,
+                        borderRadius: 4, font: `400 13px/1.6 ${SANS}`, color: C.ink, marginBottom: 8 }}>
+                        {m.sentence}
+                      </div>
+                      {/* Layer 2 — how it works, collapsed. */}
+                      <Fold label="How it works" open={evidence}>
+                        {m.how.map((h, j) => (
+                          <div key={j} style={{ font: `400 12px/1.55 ${SANS}`, color: C.ink, marginTop: j ? 5 : 0 }}>{h}</div>
+                        ))}
+                      </Fold>
+                      {/* Layer 3 — the route, stated once, structurally. */}
+                      <Fold label="The route" open={evidence}>
+                        <PathwayTrace compId={f[0]} teams={[f[2], f[3]]} quotes={false} />
+                      </Fold>
+                      {/* Layer 4 — sheet text, verbatim, adjacent to the derivation.
+                          This is the fbl-005 protection; evidence mode expands it. */}
+                      <Fold label="Sheet text (verbatim)" open={evidence}>
+                        {m.quotes.map((q, j) => (
+                          <div key={j} style={{ font: `400 11.5px/1.55 ${SANS}`, color: C.muted, marginTop: j ? 6 : 0 }}>
+                            <span style={{ font: `500 10px/1 ${MONO}`, color: C.brass }}>{q.id} · {q.field}: </span>
+                            «{q.text}»
+                          </div>
+                        ))}
+                      </Fold>
+                      {/* Internal verdicts (taxonomy, footers, gap narration) —
+                          audit voice, evidence mode only. Relocated, not dropped. */}
+                      {evidence && (() => {
                         const v = idx.fixtureVerdict(f[0], f[2], f[3], f[1]);
                         if (!v) return null;
                         const col = v.level === "live" ? C.rank : v.level === "low" ? C.muted : C.fault;
@@ -1101,7 +1390,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                           </div>
                         );
                       })()}
-                      {(() => {
+                      {evidence && (() => {
                         const p = idx.placement(f[0], f[4]);
                         if (!p) return null;
                         const col = p.level === "live" ? C.live : p.level === "unresolved" ? C.fault : C.muted;
@@ -1130,12 +1419,9 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                           </div>
                         );
                       })()}
-                      <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.muted, marginBottom: 9 }}>
-                        
-                      </div>
-                      <PathwayTrace compId={f[0]} teams={[f[2], f[3]]} />
                     </div>
-                  )}
+                    );
+                  })()}
                   </div>
                 );
     }
@@ -1299,6 +1585,20 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
             : meta?.loadPath === "dragdrop" ? "workbook (drag-drop)" : "unrecorded"} />
           <Row k="loaded" v={meta?.loadedAt ? new Date(meta.loadedAt).toLocaleString() : "—"} />
           {Object.entries(meta?.counts || {}).map(([k, v]) => <Row key={k} k={k} v={v} />)}
+        </div>
+
+        <SectionLabel n="—" text="About the verdicts"
+          sub="The methodology behind every fixture card and ranking panel — stated once, here, instead of on each card." />
+        <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4,
+          padding: "14px 17px", marginBottom: 20, font: `400 12.5px/1.65 ${SANS}`, color: C.ink }}>
+          Verdicts are structural: derived from the link graph, the captured standings, and declared
+          cut-line rules. Proximity to a line is arithmetic on today's table — no results, seeding,
+          form or probability is consulted, and nothing here is a prediction. "In contention" means
+          within the documented contention bands (README: within 25 rating points of a line, or 3
+          places where no rating exists). Conditional berth rules are either structured in the data
+          or quoted verbatim from the sheet — when a condition can't be resolved, the card says so
+          rather than naming a winner. Fixture times are shown exactly as entered from their sources
+          with the zone unverified unless declared.
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>
@@ -1496,6 +1796,14 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                 boxShadow: view === k ? "0 1px 2px #14202B14" : "none",
               }}>{l}</button>
             ))}
+            {/* Evidence mode: expands every "Sheet text (verbatim)" layer and
+                reveals the internal verdict blocks. The audit affordance. */}
+            <button onClick={() => setEvidence(!evidence)} title="Expand all sheet text and internal verdicts"
+              style={{ font: `500 12px/1 ${SANS}`, padding: "8px 15px", borderRadius: 3, cursor: "pointer",
+                border: `1px dashed ${evidence ? C.brass : C.rule}`, background: evidence ? "#9A6F3014" : "transparent",
+                color: evidence ? C.brass : C.muted }}>
+              evidence {evidence ? "on" : "off"}
+            </button>
           </nav>
         </div>
         <Provenance meta={meta} />

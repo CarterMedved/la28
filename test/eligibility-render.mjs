@@ -66,14 +66,17 @@ const renderWith = (seed) => {
   return React.renderToText(React.createElement(Explorer,
     { data, meta: {}, problems: [], onReset: () => {}, onLoad: () => {}, busy: false }));
 };
-// Root useState order: view, sel, openNote, openComp, sportFilter, calMode, openFx
+// Root useState order: view, sel, openNote, openComp, sportFilter, calMode, openFx, evidence.
+// The card redesign moved verbatim quotes into the "Sheet text" layer;
+// evidence=true (the audit affordance) expands it, which is where this
+// harness proves every route-reachable note still renders.
 // Key format matches FxRow: comp|date|team1|stage — the stage was added so
 // two undated semi-finals in one competition don't share a key.
 const fxKey = (comp) => {
   const f = data.fx.find(f => f[0] === comp);
   return f ? `${f[0]}|${f[1]}|${f[2]}|${f[4]}` : null;
 };
-const trace = (comp) => renderWith(["calendar", null, null, null, "All", "fixtures", fxKey(comp)]);
+const trace = (comp) => renderWith(["calendar", null, null, null, "All", "fixtures", fxKey(comp), true]);
 
 console.log("PathwayTrace shows eligibility_note (route-reachable links):");
 const CASES = [

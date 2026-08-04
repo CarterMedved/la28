@@ -83,6 +83,32 @@ Tests (all must pass before trusting a change):
 > override — West Indies counts toward a field but never toward the
 > continental allocation (thresholds.ts splits these).
 
+> **Contention bands** (app policy, `CONTENTION` in qualification-app.jsx):
+> a team is "in contention" within 25 rating points of a line, or 3 places
+> where no rating exists; beyond that the card says "too far back".
+> Justified by the workbook's own recorded judgments, not taste: margins of
+> 3 and 3 are recorded live contests, 11 is the "nearest challenger", 19
+> "the live contest", and 39 "expected to fall through" — the band
+> separates exactly these five. 25 is also the continental-contention
+> precedent in fixtureVerdict. Deliberately coarse pending any captured
+> rating-volatility history; refine only with data, never by feel.
+
+> **Links.condition_trigger / condition_recipient** (structured conditional
+> recipients — the fbl-005 class): when a berth edge's recipient depends on
+> a condition, these two columns state it structurally so the card sentence
+> renders it without parsing prose. Vocabulary the code knows
+> (`conditionState` in qualification-app.jsx): triggers `HOST_WINS`,
+> `HOST_IN_SEMIS`; recipients `RUNNER_UP`, `NEXT_ELIGIBLE`,
+> `OTHER_SEMIFINALISTS` (deliberately non-definite — the draw decides, so
+> it renders the marker form even when filled). FAIL-CLOSED: blank,
+> half-filled or unrecognised values render "who receives it is
+> conditional — see how it works", never a flattened sentence; the
+> unconditional sentence is reachable only when eligibility_note,
+> entry_condition and conditional-shaped criterion language are ALL absent
+> and both columns are blank (test/sentence.mjs pins every state). Grow
+> the enum in code first, then use the value in the Sheet — an untaught
+> value degrades safely but says less than it could.
+
 > **start_date / end_date** — always the competition's *true* start and end,
 > from the official schedule, even when earlier rounds' fixtures aren't
 > captured in Fixtures. The start of the captured segment is never stored: it

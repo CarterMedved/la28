@@ -171,6 +171,14 @@ rehearsal serves the published tree under the `/la28/` Pages base and walks page
 artefact fetch over real HTTP, then proves an app-only change still republishes (the shell
 sha256 is part of ci-publish's SKIP decision). Run it before pushing app changes too.
 
+**`test/sentence.mjs` — the fixture-card sentence engine's acceptance tests.** The card's
+layer-1 sentence is NEW derivation (templates whose slots come only from thresholds, the link
+graph, the HOST allocation and the structured condition columns — never free text). The
+harness pins the property that makes it safe: a conditional can never flatten. fbl-005 in
+every column state (blank/filled/garbage/half), fbl-012 never naming a definite recipient,
+and the unconditional form reachable only when prose and columns are both clean. Run it with
+render-app after any app change.
+
 **Suppression discipline:** `known-issues.json` entries need a note saying what would clear
 them. Remove entries the moment they resolve; a stale suppression is worse than none.
 

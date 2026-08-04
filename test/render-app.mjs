@@ -111,8 +111,12 @@ assert(/berths sum ✓/.test(rendered["pathway"]), "Pathway view shows a reconci
 assert(rendered["pathway"].includes("All places allocated"), "Pathway cascade closes at zero");
 
 const cf = rendered["calendar-fixtures"];
-assert(cf.includes("1 win from title"), "Fixtures view carries the placement chip on the CONCACAF final");
-assert(cf.includes("shapes bracket"), "Fixtures view carries the placement chip on group games");
+// Card redesign: rows carry reader-worded status, not internal taxonomy —
+// the CONCACAF final (knockout on a direct berth edge) gets the stake chip,
+// group games are deliberately quiet at row level.
+assert(cf.includes("qualification at stake"), "Fixtures view flags the stake on knockout rows near a berth");
+assert(!cf.includes("shapes bracket") && !cf.includes("1 win from title"),
+  "internal placement taxonomy no longer renders at row level");
 assert(!/the winner of this game qualifies/i.test(cf), "No rendered text claims the winner of a game qualifies");
 
 // 4. Audit view derives zero berth-sum mismatches.
@@ -187,10 +191,10 @@ console.log("\ntz display assertions (v20 workbook):");
   const t = React.renderToText(React.createElement(Explorer,
     { data: d20, meta, problems: [], onReset: () => {}, onLoad: () => {}, busy: false }));
   assert(/22:30\s+EDT/.test(t), "FWOPQT declared row shows its time with the zone (22:30 EDT)");
-  assert(/\d\d:\d\d\s+zone\?/.test(t), "an undeclared real time is labelled zone?, never bare");
-  assert(!/00:00\s+zone\?/.test(t) || !/TBC\s+zone\?/.test(t), "no-time rows never carry a zone label");
-  const bare = t.match(/\d\d:\d\d(?!\s+(EDT|zone\?|[A-Z]{2,5}\b))/g) || [];
-  assert(bare.length === 0, `every rendered kickoff time carries a zone or zone? (${bare.length} bare)`);
+  assert(/\d\d:\d\d\s+·\?/.test(t), "an undeclared real time is marked ·? (zone unverified), never bare");
+  assert(!/00:00\s+·\?/.test(t) && !/—\s+·\?/.test(t), "no-time rows never carry a zone mark");
+  const bare = t.match(/\d\d:\d\d(?!\s+(EDT|·\?|[A-Z]{2,5}\b))/g) || [];
+  assert(bare.length === 0, `every rendered kickoff time carries a zone or ·? (${bare.length} bare)`);
 }
 
 console.log(failures ? `\n${failures} assertion(s) FAILED` : "\nAll render assertions passed.");
