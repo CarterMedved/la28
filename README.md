@@ -64,8 +64,14 @@ Tests (all must pass before trusting a change):
 > **The counted order** (defined term — use it wherever prose describes a
 > field-setting ranking): a ranking's rows with `olympic_eligible = Y` OR
 > `counts_in_field = Y`, in rank order. This is the set the code uses
-> (src/lib/thresholds.ts, NEXT_N_NOT_QUALIFIED and TOP_N_OF_POOL; the cut
-> then removes already-qualified teams and provisional holders on top).
+> (src/lib/thresholds.ts). The two POOLED rules (NEXT_N_NOT_QUALIFIED,
+> TOP_N_OF_POOL) then remove, with one identical filter, two states that
+> are NOT the same thing: already-qualified teams (settled — no line
+> anywhere contests them) and the provisional holder (out of pools it
+> sits above, but still LIVE — a PROVISIONAL_HOLDER cut-line targets
+> exactly that team and its hold stays contested until the deadline;
+> HANDOFF PART 3). RANK_AT_OR_ABOVE and TOP_PER_NAMED_CONTINENT remove
+> neither.
 > `counts_in_field` is an OVERRIDE that adds a team which cannot hold a
 > place — never a selector: on its own it matches exactly one team (West
 > Indies), so a one-column definition is wrong in either direction.
