@@ -106,18 +106,54 @@ console.log("design cards derive from the real data:");
     !/la28-|bkb-\d|fbl-\d|cri-\d/.test(m.sentence), m.sentence);
   // Condition TYPES are derived from the graph (berths vs qualifiers), not
   // from prose: bkb-033 (qualifiers edge, AmeriCup → FWOQT) must surface
-  // as a ROUTE condition naming its step; bkb-028 (berths edge) stays a
-  // RECIPIENT condition on the final step. Both, distinctly, on one card.
+  // as a ROUTE condition naming its step. bkb-028 (berths edge) asserts
+  // TODAY only because its app-addressed note contains "should" — the
+  // accepted replacement text carries no asserting language, so the paste
+  // flips it quiet with no code change. Both states pinned.
   const howText = m.how.join(" | ");
   check("route condition surfaced at its step (bkb-033, derived from the qualifiers column)",
     /route condition applies at .*AmeriCup.*how many teams advance/i.test(howText), howText);
-  check("recipient condition still typed on the final step (bkb-028, berths column)",
+  check("recipient condition typed on the final step (bkb-028's current note asserts via 'should')",
     /recipient condition applies on the final step: who receives/i.test(howText), howText);
   check("the two types never share a label",
     !/route condition applies on the final step/i.test(howText) &&
     !/recipient condition applies at/i.test(howText), howText);
   check("conditional steps marked in the step list",
     /4 advance \(conditional\) → /.test(howText) && /10 places \(conditional\) → /.test(howText), howText);
+}
+{
+  // The accepted bkb-028 replacement (gated paste, pending) goes QUIET:
+  // arithmetic explanation, no condition — the label must disappear while
+  // the note stays quoted verbatim.
+  const REPLACEMENT = "The host and the FWBWC champion are already inside the 16-team field, so two of the twelve qualifying positions will be taken by teams that have already qualified. The recorded figure is the NET ten new places — that is why it is not 'twelve advance', and why the quota reconciles.";
+  const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])
+    .find(x => x[0] === "fiba-women-s-americup-2027-south-american-qualifier");
+  const m = model(f, raw => { const l = link(raw, "bkb-028"); l.eligibility_note = REPLACEMENT; });
+  const howText = m.how.join(" | ");
+  check("after the accepted paste, bkb-028 goes quiet (no recipient line, no final-step mark)",
+    !/recipient condition/i.test(howText) && !/10 places \(conditional\)/.test(howText), howText);
+  check("route condition at the AmeriCup survives the paste", /route condition applies at .*AmeriCup/i.test(howText));
+  check("the replaced note is still quoted verbatim",
+    m.quotes.some(q => q.id === "bkb-028" && /NET ten new places/.test(q.text)));
+}
+
+// ---- the fbl-013 class: descriptive prose must NOT be labelled a condition ----
+console.log("descriptive notes stay quiet (the AFC card bug):");
+{
+  const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])
+    .find(x => x[0] === "afc-womens-asian-cup-2026");
+  const m = model(f);
+  const howText = m.how.join(" | ");
+  check("fbl-013 ('Two groups of four, league format.') carries no condition label",
+    !/\(conditional\)/.test(howText) && !/recipient condition|A condition applies/i.test(howText), howText);
+  check("no conditional marker in the sentence either",
+    !MARKER.test(m.sentence) && !FLAT.test(m.sentence), m.sentence);
+  check("the play-off route is covered, named by what separates it",
+    /A separate route ends differently: 1 place decided at .*play.?off/i.test(howText), howText);
+  check("the separate route's sheet text joins the verbatim layer",
+    m.quotes.some(q => q.id === "fbl-017"));
+  check("quotes never duplicate an id+field",
+    new Set(m.quotes.map(q => `${q.id}|${q.field}`)).size === m.quotes.length);
 }
 {
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])

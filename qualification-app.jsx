@@ -471,25 +471,61 @@ const KNOWN_RECIPIENTS = {
   OTHER_SEMIFINALISTS: { clause: "which placings convert to berths changes", definite: false },
 };
 
-// What proves conditional prose is ABSENT rather than merely unparsed:
-// nothing can — criterion is free text. So the guard fails toward the
-// marker: any non-null eligibility_note or entry_condition, or a criterion
-// carrying conditional-shaped language, marks the edge conditional. The
-// unconditional sentence is reachable ONLY when all three are clean and
-// the condition columns are empty.
+// Two detectors, opposite fail directions, because the two errors differ:
+// CONDITIONAL_SHAPE is the FLATTEN GUARD — aggressive by design. Any
+// prose on the edge (or conditional-shaped criterion) blocks the
+// unconditional sentence; nothing can prove prose is absent rather than
+// merely unparsed, so this side over-detects safely.
+// CONDITION_ASSERTED is the LABEL GUARD — conservative by design. The
+// card asserts "this can change" only on language that STATES a
+// condition; firing on a descriptive note ("Two groups of four, league
+// format.") would be a FALSE claim — the fbl-013 class. A bare mid-
+// sentence "if" is not enough: explanatory prose uses it too ("can
+// finish below another and still qualify if it is the top side" —
+// bkb-002 explains a rule, changes nothing). The sheet's real
+// conditionals announce themselves — CONDITIONAL:, NOT GUARANTEED, NOT
+// automatic, Only (live) if, Reduced by N if, sentence-initial If — so
+// those anchored forms are what asserts. Prose that is present but not
+// asserting yields "quiet": no unconditional sentence, no condition
+// label either, the note quoted verbatim in the sheet-text layer.
 const CONDITIONAL_SHAPE = /\bshould\b|\bunless\b|\bif\b|\bconditional\b|already qualified|runner[- ]up|\binstead\b|passes to/i;
+const CONDITION_ASSERTED = /\bshould\b|\bunless\b|\bconditional\b|passes to|\bwhether\b|not guaranteed|not automatic|\bonly (?:live )?if\b|reduced by \w+ if\b|(?:^|[.:;|] *)if\b/i;
 
 export function conditionState(edge, hostName) {
   const t = edge?.condition_trigger == null ? null : String(edge.condition_trigger).trim().toUpperCase() || null;
   const r = edge?.condition_recipient == null ? null : String(edge.condition_recipient).trim().toUpperCase() || null;
   const prose = !!(edge?.eligibility_note || edge?.entry_condition ||
     CONDITIONAL_SHAPE.test(String(edge?.criterion ?? "")));
-  if (t == null && r == null) return prose ? { kind: "marker" } : { kind: "none" };
+  const asserted = CONDITION_ASSERTED.test(
+    [edge?.eligibility_note, edge?.entry_condition, edge?.criterion].filter(Boolean).join(" "));
+  if (t == null && r == null) return asserted ? { kind: "marker" } : prose ? { kind: "quiet" } : { kind: "none" };
   const trig = t != null ? KNOWN_TRIGGERS[t] : null;
   const rec = r != null ? KNOWN_RECIPIENTS[r] : null;
   if (!trig || !rec) return { kind: "marker" };            // half-filled, garbage, unknown: fail closed
   if (!rec.definite) return { kind: "marker", trigger: trig(hostName ?? "the hosts") };
   return { kind: "structured", clause: `${trig(hostName ?? "the hosts")}, ${rec.clause}`, trigger: t, recipient: r };
+}
+
+// EVERY route from a competition to an Olympic event, region-gated (a
+// team's confederation is fixed, so a route may never cross into another
+// region — without the gate an African qualifier appears to route through
+// the Americas, Asia and Europe). ONE definition, used by the layer-3
+// trace AND the card's route coverage, so "How it works" can never
+// describe a different route set than the trace shows.
+export function routesFrom(idx, compId, origin = null, depth = 0, seen = new Set()) {
+  const regionOf = (id) => { const c = idx.node[id]?.confederation; return c && c !== "GLOBAL" ? c : null; };
+  if (depth > 7) return [];
+  const home = origin ?? regionOf(compId);
+  const res = [];
+  for (const l of (idx.outbound[compId] || [])) {
+    const r = regionOf(l.to_id);
+    if (home && r && r !== home) continue;
+    if (l.to_type === "OLYMPIC_EVENT") { res.push([l]); continue; }
+    if (seen.has(l.to_id)) continue;
+    routesFrom(idx, l.to_id, home, depth + 1, new Set([...seen, l.to_id]))
+      .forEach(rest => res.push([l, ...rest]));
+  }
+  return res;
 }
 
 // Shortest direct (non-ranking) route from a competition to an Olympic
@@ -573,7 +609,12 @@ export function fixtureCardModel(idx, DATA, f) {
   const route = idx.route[compId] || { kind: "NONE" };
   const how = [];
   const quotes = [];
-  const pushQuote = (id, field, text) => { if (text) quotes.push({ id, field, text: String(text) }); };
+  const qSeen = new Set();
+  const pushQuote = (id, field, text) => {
+    if (!text || qSeen.has(`${id}|${field}`)) return;
+    qSeen.add(`${id}|${field}`);
+    quotes.push({ id, field, text: String(text) });
+  };
 
   // ---- ranking side ----
   let rankSentence = null, rankLevel = "none";
@@ -657,13 +698,14 @@ export function fixtureCardModel(idx, DATA, f) {
     // partition the Links tab — no edge fills both — so the label is a
     // fact of the edge, not a reading of its note. Edges with NEITHER
     // filled (some ADVANCE rows) can't be typed and get the untyped line.
-    // Detection here uses SHAPED note/entry_condition only, not any-prose:
-    // over-claiming "this can change" would be a false statement, the
-    // opposite failure from the sentence side, so this side fails quiet —
-    // the note is still quoted verbatim in the sheet-text layer either way.
-    const stepConditional = (l) => l === berthEdge ? cond.kind !== "none"
-      : CONDITIONAL_SHAPE.test(String(l.eligibility_note ?? "")) ||
-        CONDITIONAL_SHAPE.test(String(l.entry_condition ?? ""));
+    // Detection uses CONDITION_ASSERTED (the label guard), never the
+    // flatten guard: over-claiming "this can change" would be a false
+    // statement — the fbl-013 class — so labels fail quiet; the note is
+    // still quoted verbatim in the sheet-text layer either way.
+    const stepConditional = (l) => l === berthEdge
+      ? cond.kind === "marker" || cond.kind === "structured"
+      : CONDITION_ASSERTED.test(String(l.eligibility_note ?? "")) ||
+        CONDITION_ASSERTED.test(String(l.entry_condition ?? ""));
     how.push(path.map(l => {
       const n = Number(l.berths) > 0 ? `${l.berths} place${Number(l.berths) === 1 ? "" : "s"}` :
         Number(l.qualifiers) > 0 ? `${l.qualifiers} advance` : "advancement";
@@ -680,6 +722,28 @@ export function fixtureCardModel(idx, DATA, f) {
     if (cond.kind === "marker") how.push(Number(berthEdge.berths) > 0
       ? `A recipient condition applies on the final step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change — the exact rule is quoted in the sheet text below.`
       : `A condition applies on the final step — the exact rule is quoted in the sheet text below.`);
+    // Every route the trace shows is covered here or explicitly delegated:
+    // other DIRECT routes are named by what separates them — their final
+    // step — and their sheet text joins the verbatim layer; ranking-points
+    // routes are the ranking paragraph's territory above.
+    const otherFinals = new Set();
+    for (const r of routesFrom(idx, compId)) {
+      if (r.some(l => l.relationship === "RANKING_POINTS")) continue;
+      const last = r[r.length - 1];
+      if (last.link_id === berthEdge.link_id || otherFinals.has(last.link_id)) continue;
+      otherFinals.add(last.link_id);
+      const dest = idx.node[last.from_id]?.label ?? last.from_id;
+      const n = Number(last.berths) > 0 ? `${last.berths} place${Number(last.berths) === 1 ? "" : "s"}` : "a place";
+      const oc = conditionState(last, hostInField(idx, last.to_id));
+      how.push(`A separate route ends differently: ${n} decided at ${dest} (${r.length} step${r.length === 1 ? "" : "s"} from here) — traced under The route.` +
+        (oc.kind === "marker" || oc.kind === "structured" ? ` A recipient condition applies on that route's final step — quoted in the sheet text below.` : ""));
+      for (const l of r) {
+        pushQuote(l.link_id, "criterion", l.criterion);
+        pushQuote(l.link_id, "entry_condition", l.entry_condition);
+        pushQuote(l.link_id, "eligibility_note", l.eligibility_note);
+        pushQuote(l.link_id, "berth_math", l.berth_math);
+      }
+    }
   }
 
   const sentence = rankSentence && placeSentence ? `${rankSentence} ${placeSentence}`
@@ -717,8 +781,8 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
   // (docs/timezones.md, measured correction). zone is Fixtures.tz — an IANA
   // declaration of what zone the stored time is in, never a conversion.
   // Three cases: declared → short zone name ("EDT");
-  // undeclared → "zone?" so a bare time can never be mistaken for a zone the
-  // viewer assumes (the 5-vs-6 Aug re-entry hazard); no time → "TBC".
+  // undeclared → "·?" so a bare time can never be mistaken for a zone the
+  // viewer assumes (the 5-vs-6 Aug re-entry hazard); no time → "—".
   const zoneAbbrev = (zone, day) => {
     try {
       return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "short" })
@@ -782,27 +846,9 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
   };
 
   // A team's confederation is fixed, so a route may never cross into another region.
-  // Without this, an African qualifier appears to route through the Americas, Asia and Europe.
-  const regionOf = (id) => {
-    const n = idx.node[id];
-    const c = n?.confederation;
-    return c && c !== "GLOBAL" ? c : null;
-  };
-  const routesToBerth = (compId, origin = null, depth = 0, seen = new Set()) => {
-    if (depth > 7) return [];
-    const home = origin ?? regionOf(compId);
-    const out = idx.outbound[compId] || [];
-    const res = [];
-    out.forEach(l => {
-      const r = regionOf(l.to_id);
-      if (home && r && r !== home) return;          // region gate
-      if (l.to_type === "OLYMPIC_EVENT") { res.push([l]); return; }
-      if (seen.has(l.to_id)) return;
-      routesToBerth(l.to_id, home, depth + 1, new Set([...seen, l.to_id]))
-        .forEach(rest => res.push([l, ...rest]));
-    });
-    return res;
-  };
+  // Region-gated route enumeration — module-level routesFrom, shared with
+  // the card model so the two can never diverge.
+  const routesToBerth = (compId) => routesFrom(idx, compId);
 
   // Match a graph edge back to the cut-line that governs it, so a route can be read
   // from a specific team's position rather than in the abstract.
@@ -921,11 +967,19 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
 
     return (
       <div style={{ display: "grid", gap: 12 }}>
-        {routes.slice(0, 8).map((r, ri) => (
+        {routes.slice(0, 8).map((r, ri) => {
+          // The header states what SEPARATES this route — its final step —
+          // not an ordinal: "2 places decided at the OQT" vs "1 place
+          // decided at the play-off" is the difference a reader needs.
+          const last = r[r.length - 1];
+          const dest = idx.node[last.from_id]?.label ?? last.from_id;
+          const n = last.relationship === "REALLOCATION" ? "a reallocated place"
+            : Number(last.berths) > 0 ? `${last.berths} place${Number(last.berths) === 1 ? "" : "s"}` : "a place";
+          return (
           <div key={ri} style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "13px 15px" }}>
             <div style={{ font: `500 10px/1 ${MONO}`, color: C.muted, letterSpacing: ".09em",
               textTransform: "uppercase", marginBottom: 11 }}>
-              {ri === 0 ? "Shortest route" : `Route ${ri + 1}`} · {r.length} step{r.length > 1 ? "s" : ""}
+              {ri === 0 ? "Shortest route" : `Route ${ri + 1}`} — {n} decided at {dest} · {r.length} step{r.length > 1 ? "s" : ""}
               {r.some(l => l.relationship === "REALLOCATION") ? " · reallocation, not an extra place" : ""}
             </div>
             <Node label={here?.label || compId} sub="you are here" tone="start" />
@@ -943,7 +997,8 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
               );
             })}
           </div>
-        ))}
+          );
+        })}
         {routes.length > 8 && <Chip>+{routes.length - 8} more routes</Chip>}
       </div>
     );
@@ -1322,8 +1377,9 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
 
     // One fixture row plus its expandable panel — shared by the dated day
     // groups and the "date unconfirmed" bucket. Undated rows have f[1] null:
-    // Time renders TBC, the ranking verdict skips its window check, and the
-    // key includes the stage so two undated semi-finals don't collide.
+    // Time renders "—" (same mark as a midnight-stored no-time row — both
+    // mean "no time recorded"), the ranking verdict skips its window check,
+    // and the key includes the stage so two undated semi-finals don't collide.
     function FxRow({ f }) {
                 const c = compById[f[0]] || {};
                 const out = idx.outbound[f[0]] || [];
@@ -1362,6 +1418,10 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                         return <Chip tone="live">◉ qualification at stake</Chip>;
                       return null;
                     })()}
+                    {/* Short route summary — a scannable header, deliberately
+                        overlapping layer 3's detail (the chips are the summary;
+                        the layers are the expansion). */}
+                    <Stakes compId={f[0]} showHops={false} />
                     {out.length > 0 && <Chip tone="open">{shown ? "▾" : "▸"} details</Chip>}
                   </div>
                   {shown && (() => {

@@ -116,6 +116,16 @@ Tests (all must pass before trusting a change):
 > and both columns are blank (test/sentence.mjs pins every state). Grow
 > the enum in code first, then use the value in the Sheet — an untaught
 > value degrades safely but says less than it could.
+> TWO prose guards with opposite fail directions, because the two errors
+> differ: the FLATTEN guard is aggressive (any prose blocks the
+> unconditional sentence — under-detection would flatten a conditional);
+> the LABEL guard is anchored (CONDITIONAL:, NOT GUARANTEED, NOT
+> automatic, Only (live) if, Reduced by N if, sentence-initial If —
+> over-detection would falsely assert "this can change" about a
+> descriptive note, the fbl-013 class). Prose that is present but not
+> asserting renders QUIET: no unconditional sentence, no condition label,
+> the note quoted verbatim in the sheet-text layer. A bare mid-sentence
+> "if" never asserts — explanatory prose uses it too (bkb-002).
 > **Condition TYPE is a fact of the edge, not a reading of its note**:
 > `berths` and `qualifiers` partition the Links tab (no row fills both), so
 > a condition on a `qualifiers` edge is a ROUTE condition (how many, or
