@@ -10,6 +10,11 @@
       "digest": "bde348a07f6f855304c892a927920a07e3f79536d799e886ec23244493e2fde5",
       "note": "prose sweep: remove current-table numbers duplicated from Standings, fix USA women 20th->19th, drop two false superlatives, correct Scotland's effect on the women's cut, name the counted order",
       "date": "2026-08-04"
+    },
+    {
+      "digest": "cbfd022f7f6b17afc9d5401fee13fc0dd9647bdc56de6841984c3ec7ada439bc",
+      "note": "condition columns: add condition_trigger and condition_recipient; declare fbl-005 HOST_WINS/RUNNER_UP and fbl-012 HOST_IN_SEMIS/OTHER_SEMIFINALISTS; rewrite two app-addressed notes for readers",
+      "date": "2026-08-04"
     }
   ]
 }
