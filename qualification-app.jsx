@@ -445,12 +445,13 @@ export const fmtDay = (iso) => {
 
 /**
  * Contention bands — POLICY, documented in README ("Contention bands").
- * Validated against every margin the workbook itself passes judgment on:
- * 3 and 3 (recorded as live contests), 11 ("nearest challenger") and 19
- * ("the live contest") fall inside CONTENDING; 39 ("expected to fall
- * through") falls outside. 25 is also the continental-contention
- * precedent already in fixtureVerdict. Pending observed rating-volatility
- * data, these stay coarse deliberately.
+ * 25 is a CHOSEN coarse number, not a derived one: its entire evidence
+ * base is five margins in one sport (cricket T20I) at one date, read off
+ * prose judgments the sweep later deleted BECAUSE typed judgments go
+ * stale — they locate the number, they cannot justify it. Untested for
+ * every other sport; rating scales differ. Refine only when captured
+ * rating-volatility history or a per-sport scale note exists (README
+ * states the full rationale and the change conditions). Never by feel.
  */
 export const CONTENTION = { AT_STAKE_MAX_PLACES: 3, CONTENDING_MAX_RATING: 25 };
 
@@ -649,13 +650,36 @@ export function fixtureCardModel(idx, DATA, f) {
     } else {
       placeSentence = `This competition awards ${eventName}'s place${Number(berthEdge.berths) === 1 ? "" : "s"} directly.` + condClause;
     }
+    // Condition TYPE is derived from the graph, never from prose: a
+    // condition on a `qualifiers` edge is a ROUTE condition (how many, or
+    // which, get through the step); a condition on a `berths` edge is a
+    // RECIPIENT condition (who receives the place). berths/qualifiers
+    // partition the Links tab — no edge fills both — so the label is a
+    // fact of the edge, not a reading of its note. Edges with NEITHER
+    // filled (some ADVANCE rows) can't be typed and get the untyped line.
+    // Detection here uses SHAPED note/entry_condition only, not any-prose:
+    // over-claiming "this can change" would be a false statement, the
+    // opposite failure from the sentence side, so this side fails quiet —
+    // the note is still quoted verbatim in the sheet-text layer either way.
+    const stepConditional = (l) => l === berthEdge ? cond.kind !== "none"
+      : CONDITIONAL_SHAPE.test(String(l.eligibility_note ?? "")) ||
+        CONDITIONAL_SHAPE.test(String(l.entry_condition ?? ""));
     how.push(path.map(l => {
       const n = Number(l.berths) > 0 ? `${l.berths} place${Number(l.berths) === 1 ? "" : "s"}` :
         Number(l.qualifiers) > 0 ? `${l.qualifiers} advance` : "advancement";
-      return `${n} → ${idx.node[l.to_id]?.event_name ?? idx.node[l.to_id]?.label ?? l.to_id}`;
+      return `${n}${stepConditional(l) ? " (conditional)" : ""} → ${idx.node[l.to_id]?.event_name ?? idx.node[l.to_id]?.label ?? l.to_id}`;
     }).join("; ") + ".");
+    for (const l of path.slice(0, -1)) {
+      if (!stepConditional(l)) continue;
+      const from = idx.node[l.from_id]?.label ?? l.from_id;
+      how.push(Number(l.qualifiers) > 0
+        ? `A route condition applies at ${from}: how many teams advance through that step, or which, can change — the exact rule is quoted in the sheet text below.`
+        : `A condition applies at ${from} — the exact rule is quoted in the sheet text below.`);
+    }
     if (cond.kind === "structured") how.push(`The winner may not receive the berth: ${cond.clause} (structured condition on ${berthEdge.link_id}).`);
-    if (cond.kind === "marker") how.push(`A recipient condition applies on the final step — the exact rule is quoted in the sheet text below.`);
+    if (cond.kind === "marker") how.push(Number(berthEdge.berths) > 0
+      ? `A recipient condition applies on the final step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change — the exact rule is quoted in the sheet text below.`
+      : `A condition applies on the final step — the exact rule is quoted in the sheet text below.`);
   }
 
   const sentence = rankSentence && placeSentence ? `${rankSentence} ${placeSentence}`

@@ -104,6 +104,20 @@ console.log("design cards derive from the real data:");
     /sets the bracket/.test(m.sentence) && /2 rounds away/.test(m.sentence) &&
     /2028 FIBA Women's Olympic Qualifying Tournaments/.test(m.sentence) &&
     !/la28-|bkb-\d|fbl-\d|cri-\d/.test(m.sentence), m.sentence);
+  // Condition TYPES are derived from the graph (berths vs qualifiers), not
+  // from prose: bkb-033 (qualifiers edge, AmeriCup → FWOQT) must surface
+  // as a ROUTE condition naming its step; bkb-028 (berths edge) stays a
+  // RECIPIENT condition on the final step. Both, distinctly, on one card.
+  const howText = m.how.join(" | ");
+  check("route condition surfaced at its step (bkb-033, derived from the qualifiers column)",
+    /route condition applies at .*AmeriCup.*how many teams advance/i.test(howText), howText);
+  check("recipient condition still typed on the final step (bkb-028, berths column)",
+    /recipient condition applies on the final step: who receives/i.test(howText), howText);
+  check("the two types never share a label",
+    !/route condition applies on the final step/i.test(howText) &&
+    !/recipient condition applies at/i.test(howText), howText);
+  check("conditional steps marked in the step list",
+    /4 advance \(conditional\) → /.test(howText) && /10 places \(conditional\) → /.test(howText), howText);
 }
 {
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])

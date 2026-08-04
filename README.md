@@ -86,12 +86,20 @@ Tests (all must pass before trusting a change):
 > **Contention bands** (app policy, `CONTENTION` in qualification-app.jsx):
 > a team is "in contention" within 25 rating points of a line, or 3 places
 > where no rating exists; beyond that the card says "too far back".
-> Justified by the workbook's own recorded judgments, not taste: margins of
-> 3 and 3 are recorded live contests, 11 is the "nearest challenger", 19
-> "the live contest", and 39 "expected to fall through" — the band
-> separates exactly these five. 25 is also the continental-contention
-> precedent in fixtureVerdict. Deliberately coarse pending any captured
-> rating-volatility history; refine only with data, never by feel.
+> 25 is a CHOSEN coarse number, not a derived one. Its entire evidence
+> base: five margins, three rankings, one sport (cricket T20I), one date
+> (3 Aug 2026) — 3, 3, 11 and 19 were treated as live, 39 as settled — plus
+> the same 25 used as the continental-contention precedent in
+> fixtureVerdict. Those five readings came from prose judgments the Aug
+> 2026 sweep then DELETED because typed judgments go stale, so they cannot
+> justify the threshold — they only locate where one observer once drew it.
+> UNTESTED for fencing, football, basketball and every unmapped sport;
+> rating scales differ by sport, so 25 may be meaningless elsewhere.
+> Evidence that would justify changing it: captured rating-volatility
+> history (how far teams actually move between table snapshots), or a
+> per-sport scale statement from the source — either arriving makes the
+> band per-ranking, not global. Never adjust it by feel: a number that
+> looks derived is worse than one that admits it was chosen.
 
 > **Links.condition_trigger / condition_recipient** (structured conditional
 > recipients — the fbl-005 class): when a berth edge's recipient depends on
@@ -108,6 +116,15 @@ Tests (all must pass before trusting a change):
 > and both columns are blank (test/sentence.mjs pins every state). Grow
 > the enum in code first, then use the value in the Sheet — an untaught
 > value degrades safely but says less than it could.
+> **Condition TYPE is a fact of the edge, not a reading of its note**:
+> `berths` and `qualifiers` partition the Links tab (no row fills both), so
+> a condition on a `qualifiers` edge is a ROUTE condition (how many, or
+> which, advance through the step — bkb-032–035, cri-004/009) and a
+> condition on a `berths` edge is a RECIPIENT condition (who receives the
+> place — fbl-005, fbl-012, bkb-001, bkb-027/028). The card's "How it
+> works" derives its label from those columns; ADVANCE rows with neither
+> filled get the untyped "a condition applies" line because the graph
+> cannot prove the type.
 
 > **start_date / end_date** — always the competition's *true* start and end,
 > from the official schedule, even when earlier rounds' fixtures aren't
