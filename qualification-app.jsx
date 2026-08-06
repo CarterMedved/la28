@@ -597,6 +597,11 @@ function rankTeamFacts(idx, rid, team) {
     // candidate. A settled continental line (leader recorded already
     // qualified) is skipped: the data says no contest exists there, and a
     // "close" gap to it must not read as a live chase.
+    // A line carried only by dormant REALLOCATION edges is not live: the
+    // sentence must not call a fallback "the last qualifying position"
+    // while its trigger test still holds (item 2, 9 Aug 2026).
+    const carriers = (idx.outbound[rid] || []).filter(l => String(l.cut_line_id) === String(t.cut.cut_line_id));
+    if (carriers.length && carriers.every(l => l.relationship === "REALLOCATION" && routeDormancy(idx, [l]).dormant)) continue;
     const f = teamLineFacts(t.cut, t.atRank, rows, r,
       { exclusions: idx.poolExclusions?.[t.cut.cut_line_id], keyOf: idx.teamKey,
         awardsPlaces: idx.node[String(t.cut.leads_to)]?.event_name != null });
@@ -840,6 +845,34 @@ export function routeMateriality(idx, DATA, route, teams) {
   }
   if (anyLive || !sawTeam || !readings.length) return { inPlay: true };
   return { inPlay: false, reason: readings.join("; ") };
+}
+
+// A REALLOCATION route is DORMANT while its primary's test still holds:
+// the fallback exists only if the primary fails, and an unmet entry
+// condition is a stronger suppression reason than rating distance.
+// Derived structurally: the reallocation's target event has an inbound
+// edge carrying a RANK_AT_OR_ABOVE cut with applies_to; if that team
+// currently passes the test, the fallback never fires. Any missing piece
+// → not dormant (fail open: show the route).
+export function routeDormancy(idx, route) {
+  const ord = (n) => n + (["th", "st", "nd", "rd"][(n % 100 - n % 10 !== 10) * 1 && n % 10 < 4 ? n % 10 : 0]);
+  for (const l of route) {
+    if (l.relationship !== "REALLOCATION") continue;
+    for (const sib of (idx.inbound[l.to_id] || [])) {
+      if (sib.link_id === l.link_id || !sib.cut_line_id) continue;
+      const cut = Object.values(idx.cutsBy || {}).flat().find(c => String(c.cut_line_id) === String(sib.cut_line_id));
+      if (!cut || cut.rule !== "RANK_AT_OR_ABOVE" || !cut.applies_to) continue;
+      const rows = idx.standBy[String(cut.ranking_id)] || [];
+      const atRank = Number(cut.n);
+      const team = String(cut.applies_to).split(",")[0].trim();
+      const r = rows.find(x => idx.teamKey(x.team) === idx.teamKey(team));
+      if (!r || !(r.rank <= atRank)) continue;
+      const edge = rows.find(x => x.rank === atRank);
+      const pts = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
+      return { dormant: true, reason: `it fires only if ${r.team} drop below rank ${atRank}, and they are ${ord(r.rank)} today${pts != null ? `, ${pts} rating points clear` : ""}` };
+    }
+  }
+  return { dormant: false };
 }
 
 // What a route's header must say: how many places, decided where, and —
@@ -1163,8 +1196,9 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           // and the cut-line's own name where one governs it — BEFORE any
           // per-team line, so "6th — chasing" and "6th — comfortably
           // inside" read as the different lines they are.
+          const dorm = routeDormancy(idx, r);
           const mat = routeMateriality(idx, DATA, r, teams);
-          const open = mat.inPlay || evidence || !!forcedOpen[ri];
+          const open = (!dorm.dormant && mat.inPlay) || evidence || !!forcedOpen[ri];
           return (
           <div key={ri} style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "13px 15px" }}>
             <div style={{ font: `500 10px/1 ${MONO}`, color: C.muted, letterSpacing: ".09em",
@@ -1174,7 +1208,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
             </div>
             {!open && (
               <div style={{ font: `400 12px/1.5 ${SANS}`, color: C.muted }}>
-                Not in play here — {mat.reason}.{" "}
+                {dorm.dormant ? <>Not live — {dorm.reason}.</> : <>Not in play here — {mat.reason}.</>}{" "}
                 <span role="button" tabIndex={0} onClick={() => setForcedOpen({ ...forcedOpen, [ri]: true })}
                   onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setForcedOpen({ ...forcedOpen, [ri]: true }); } }}
                   style={{ color: C.brass, cursor: "pointer", font: `500 11px/1.5 ${MONO}` }}>show the trace ▸</span>

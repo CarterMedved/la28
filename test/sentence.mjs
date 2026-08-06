@@ -28,7 +28,7 @@ await build({
            "xlsx": root + "test/stubs/xlsx.js", "papaparse": root + "test/stubs/papaparse.js" },
   logLevel: "silent",
 });
-const { buildIndex, fixtureCardModel, normalise, routesFrom, routeMateriality, routeHeader, recordedRule, INLINE_RULE_MAX } =
+const { buildIndex, fixtureCardModel, normalise, routesFrom, routeMateriality, routeDormancy, routeHeader, recordedRule, INLINE_RULE_MAX } =
   await import(pathToFileURL(root + "test/.build/sentence.bundle.mjs"));
 
 const ds = loadWorkbook(root + "data/LA28_Qualification_Database_v22.xlsx");
@@ -266,6 +266,25 @@ console.log("per-rule measurement (the Bangladesh bug and its class):");
   const wf = teamLineFacts(ds.cuts.find(c => c.cut_line_id === "icc-w-host-fallback"), 4, women, women.find(x => x.team === "Sri Lanka"));
   check("PROVISIONAL_HOLDER regression pin: Sri Lanka chasing the holder by 11 points",
     wf.state === "chasing" && wf.gapRating === 11, JSON.stringify(wf));
+}
+
+
+// ---- dormant fallback routes: suppressed, and never a sentence claim ----
+console.log("dormancy (unmet entry conditions):");
+{
+  const { data, idx } = ctx();
+  const menRoute = routesFrom(idx, "indian-cricket-team-in-bangladesh-in-2026").find(r => r.some(l => l.link_id === "cri-021"));
+  const d1 = routeDormancy(idx, menRoute);
+  check("men's host-fallback is DORMANT, saying why (USA inside the top 15)",
+    d1.dormant && /drop below rank 15/.test(d1.reason) && /13th today/.test(d1.reason), d1.reason);
+  const wRoute = routesFrom(idx, "pakistan-women-s-cricket-team-in-sri-lanka-in-2026").find(r => r.some(l => l.link_id === "cri-020"));
+  const d2 = routeDormancy(idx, wRoute);
+  check("women's host-fallback stays LIVE (USA women fail the test)", d2.dormant === false);
+  const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])
+    .find(x => x[0] === "indian-cricket-team-in-bangladesh-in-2026");
+  const m = model(f);
+  check("the sentence no longer claims the dormant line as a qualifying position",
+    !/off the last qualifying position/.test(m.sentence) && m.rankLevel !== "live", m.sentence);
 }
 
 // ---- the marker's edge is always in a rendered route ----
