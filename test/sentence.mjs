@@ -27,17 +27,24 @@ await build({
            "xlsx": root + "test/stubs/xlsx.js", "papaparse": root + "test/stubs/papaparse.js" },
   logLevel: "silent",
 });
-const { buildIndex, fixtureCardModel, normalise } = await import(pathToFileURL(root + "test/.build/sentence.bundle.mjs"));
+const { buildIndex, fixtureCardModel, normalise, routesFrom, routeMateriality, routeHeader } =
+  await import(pathToFileURL(root + "test/.build/sentence.bundle.mjs"));
 
 const ds = loadWorkbook(root + "data/LA28_Qualification_Database_v22.xlsx");
 const strip = rows => rows.map(r => { const o = { ...r }; delete o[RAW]; return o; });
-const model = (fx, mutate) => {
+const ctx = (mutate) => {
   const raw = { events: strip(ds.events), comps: strip(ds.comps), links: strip(ds.links), rank: strip(ds.rank),
                 standings: strip(ds.standings), cuts: strip(ds.cuts), fixtures: strip(ds.fixtures), qualified: strip(ds.qualified) };
   mutate?.(raw);
   const { data } = normalise(raw);
-  return fixtureCardModel(buildIndex(data), data, fx);
+  return { data, idx: buildIndex(data) };
 };
+const model = (fx, mutate) => {
+  const { data, idx } = ctx(mutate);
+  return fixtureCardModel(idx, data, fx);
+};
+const notesOf = (m, id) => (m.edgeNotes[id] || []).join(" | ");
+const allNotes = (m) => Object.values(m.edgeNotes).flat().join(" | ");
 
 let failures = 0;
 const check = (name, ok, detail = "") => {
@@ -47,7 +54,7 @@ const check = (name, ok, detail = "") => {
 
 // The flattened shape that must never appear on a conditional edge.
 const FLAT = /tournament winner takes it|winner qualifies|winner takes the (berth|place)/i;
-const MARKER = /conditional — see how it works/i;
+const MARKER = /conditional — the route below carries the rule/i;
 const link = (raw, id) => raw.links.find(x => x.link_id === id);
 
 // ---- fbl-005: a knockout fixture on the conditional edge ----
@@ -105,34 +112,30 @@ console.log("design cards derive from the real data:");
     /2028 FIBA Women's Olympic Qualifying Tournaments/.test(m.sentence) &&
     !/la28-|bkb-\d|fbl-\d|cri-\d/.test(m.sentence), m.sentence);
   // Condition TYPES are derived from the graph (berths vs qualifiers), not
-  // from prose: bkb-033 (qualifiers edge, AmeriCup → FWOQT) must surface
-  // as a ROUTE condition naming its step. bkb-028 (berths edge) asserts
-  // TODAY only because its app-addressed note contains "should" — the
-  // accepted replacement text carries no asserting language, so the paste
-  // flips it quiet with no code change. Both states pinned.
-  const howText = m.how.join(" | ");
-  check("route condition surfaced at its step (bkb-033, derived from the qualifiers column)",
-    /route condition applies at .*AmeriCup.*how many teams advance/i.test(howText), howText);
-  check("recipient condition typed on the final step (bkb-028's current note asserts via 'should')",
-    /recipient condition applies on the final step: who receives/i.test(howText), howText);
-  check("the two types never share a label",
-    !/route condition applies on the final step/i.test(howText) &&
-    !/recipient condition applies at/i.test(howText), howText);
-  check("conditional steps marked in the step list",
-    /4 advance \(conditional\) → /.test(howText) && /10 places \(conditional\) → /.test(howText), howText);
+  // from prose, and each condition renders ON ITS OWN EDGE (edgeNotes) —
+  // there is no "how it works" paragraph to retype the trace. bkb-028
+  // (berths edge) asserts TODAY only because its app-addressed note
+  // contains "should" — the accepted replacement flips it quiet with no
+  // code change. Both states pinned.
+  check("route condition sits on bkb-033, its own edge",
+    /route condition applies on this step: how many teams advance/i.test(notesOf(m, "bkb-033")), notesOf(m, "bkb-033"));
+  check("recipient condition sits on bkb-028 (its current note asserts via 'should')",
+    /recipient condition applies on this step: who receives/i.test(notesOf(m, "bkb-028")), notesOf(m, "bkb-028"));
+  check("the two types never share an edge or a label",
+    !/recipient/i.test(notesOf(m, "bkb-033")) && !/route condition/i.test(notesOf(m, "bkb-028")));
 }
 {
-  // The accepted bkb-028 replacement (gated paste, pending) goes QUIET:
+  // The accepted bkb-028 replacement (pasted 4 Aug, live) goes QUIET:
   // arithmetic explanation, no condition — the label must disappear while
-  // the note stays quoted verbatim.
+  // the note stays quoted verbatim. (The pinned v22 fixture predates the
+  // paste, so the mutation reproduces it.)
   const REPLACEMENT = "The host and the FWBWC champion are already inside the 16-team field, so two of the twelve qualifying positions will be taken by teams that have already qualified. The recorded figure is the NET ten new places — that is why it is not 'twelve advance', and why the quota reconciles.";
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])
     .find(x => x[0] === "fiba-women-s-americup-2027-south-american-qualifier");
   const m = model(f, raw => { const l = link(raw, "bkb-028"); l.eligibility_note = REPLACEMENT; });
-  const howText = m.how.join(" | ");
-  check("after the accepted paste, bkb-028 goes quiet (no recipient line, no final-step mark)",
-    !/recipient condition/i.test(howText) && !/10 places \(conditional\)/.test(howText), howText);
-  check("route condition at the AmeriCup survives the paste", /route condition applies at .*AmeriCup/i.test(howText));
+  check("after the accepted paste, bkb-028 goes quiet (no note on its edge)",
+    !notesOf(m, "bkb-028"), notesOf(m, "bkb-028"));
+  check("route condition on bkb-033 survives the paste", /route condition/i.test(notesOf(m, "bkb-033")));
   check("the replaced note is still quoted verbatim",
     m.quotes.some(q => q.id === "bkb-028" && /NET ten new places/.test(q.text)));
 }
@@ -143,17 +146,45 @@ console.log("descriptive notes stay quiet (the AFC card bug):");
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])
     .find(x => x[0] === "afc-womens-asian-cup-2026");
   const m = model(f);
-  const howText = m.how.join(" | ");
-  check("fbl-013 ('Two groups of four, league format.') carries no condition label",
-    !/\(conditional\)/.test(howText) && !/recipient condition|A condition applies/i.test(howText), howText);
+  check("fbl-013 ('Two groups of four, league format.') carries no condition label anywhere",
+    !/condition applies/i.test(allNotes(m)), allNotes(m));
   check("no conditional marker in the sentence either",
     !MARKER.test(m.sentence) && !FLAT.test(m.sentence), m.sentence);
-  check("the play-off route is covered, named by what separates it",
-    /A separate route ends differently: 1 place decided at .*play.?off/i.test(howText), howText);
+  const { data, idx } = ctx();
+  const headers = routesFrom(idx, "afc-womens-asian-cup-2026").map(r => routeHeader(idx, data, r));
+  check("the play-off route is separated by its header",
+    headers.some(h => /2 places decided at .*Olympic Qualifying/i.test(h)) &&
+    headers.some(h => /1 place decided at .*play.?off/i.test(h)), headers.join(" || "));
   check("the separate route's sheet text joins the verbatim layer",
     m.quotes.some(q => q.id === "fbl-017"));
   check("quotes never duplicate an id+field",
     new Set(m.quotes.map(q => `${q.id}|${q.field}`)).size === m.quotes.length);
+}
+
+// ---- route headers name WHICH place; materiality under the band ----
+console.log("cricket routes: named lines, settled route suppressed:");
+{
+  const { data, idx } = ctx();
+  const comp = "pakistan-women-s-cricket-team-in-sri-lanka-in-2026";
+  const routes = routesFrom(idx, comp);
+  const headers = routes.map(r => routeHeader(idx, data, r));
+  check("the fallback route's header names its cut-line",
+    headers.some(h => /Host-place fallback/i.test(h)), headers.join(" || "));
+  check("the qualifier-field route's header names ITS cut-line — different place, stated first",
+    headers.some(h => /FOGQT field — next eight not yet qualified/i.test(h)), headers.join(" || "));
+  const teams = ["Sri Lanka Women", "Pakistan Women"];
+  const byCut = (id) => routes.find(r => r.some(l => l.cut_line_id === id));
+  const live = routeMateriality(idx, data, byCut("icc-w-host-fallback"), teams);
+  const settled = routeMateriality(idx, data, byCut("icc-w-fogqt-8"), teams);
+  check("the host-fallback route stays in play (11-point live chase)", live.inPlay === true);
+  check("the qualifier-field route collapses, saying why",
+    settled.inPlay === false && /Sri Lanka.*clear of this line/i.test(settled.reason) &&
+    /Pakistan.*clear of this line/i.test(settled.reason), settled.reason);
+  // The mechanism sentence lives on the cut-carrying edge, not in a section.
+  const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage]).find(x => x[0] === comp);
+  const m = model(f);
+  check("ranking mechanism renders on cri-020, the edge carrying the live cut",
+    /isn't settled.*highest-ranked team not already qualified/i.test(notesOf(m, "cri-020")), notesOf(m, "cri-020"));
 }
 {
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])

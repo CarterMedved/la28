@@ -457,7 +457,7 @@ export const CONTENTION = { AT_STAKE_MAX_PLACES: 3, CONTENDING_MAX_RATING: 25 };
 
 // Structured condition vocabulary. UNRECOGNISED VALUES FAIL CLOSED to the
 // marker form — the enum will grow with ~46 sports left, and a value the
-// template doesn't know must degrade to "conditional; see how it works",
+// template doesn't know must degrade to the conditional marker form,
 // never to a flattened sentence.
 const KNOWN_TRIGGERS = {
   HOST_WINS: (host) => `if ${host} win the tournament`,
@@ -510,8 +510,8 @@ export function conditionState(edge, hostName) {
 // team's confederation is fixed, so a route may never cross into another
 // region — without the gate an African qualifier appears to route through
 // the Americas, Asia and Europe). ONE definition, used by the layer-3
-// trace AND the card's route coverage, so "How it works" can never
-// describe a different route set than the trace shows.
+// trace AND the card's route coverage, so the card can never describe
+// a different route set than the trace shows.
 export function routesFrom(idx, compId, origin = null, depth = 0, seen = new Set()) {
   const regionOf = (id) => { const c = idx.node[id]?.confederation; return c && c !== "GLOBAL" ? c : null; };
   if (depth > 7) return [];
@@ -607,7 +607,13 @@ export function fixtureCardModel(idx, DATA, f) {
   const [compId, date, t1, t2, stage] = [f[0], f[1], f[2], f[3], f[4]];
   const comp = idx.node[compId];
   const route = idx.route[compId] || { kind: "NONE" };
-  const how = [];
+  // Derived sentences live ON the edge they describe (link_id → lines),
+  // rendered inside the trace at that step. There is no separate "how it
+  // works" section: prose that retypes the trace is repetition, and every
+  // derived sentence has an edge (each cut-line is carried by a link —
+  // checked 6 Aug 2026 — and conditions sit on their own steps).
+  const edgeNotes = {};
+  const note = (id, text) => (edgeNotes[id] ??= []).push(text);
   const quotes = [];
   const qSeen = new Set();
   const pushQuote = (id, field, text) => {
@@ -642,7 +648,12 @@ export function fixtureCardModel(idx, DATA, f) {
         ...contending.slice(1).map(x => `${x.team} are also in contention, ${x.gapRating} rating points from the line.`),
       ];
       rankSentence = [main, ...rest].join(" ");
-      how.push(p.holder
+      // The ranking MECHANISM belongs on the edge that carries the cut it
+      // describes; falls back to the rating-points edge (never needed
+      // today — every cut-line is carried by a link).
+      const cutEdge = (DATA.links || []).find(l => l.cut_line_id === p.cut.cut_line_id)
+        ?? (idx.outbound[compId] || []).find(l => l.relationship === "RANKING_POINTS");
+      if (cutEdge) note(cutEdge.link_id, p.holder
         ? `The place isn't settled: it belongs to whoever is the highest-ranked team not already qualified when the table closes. This ${noun} moves rating points, not places directly.`
         : `Places go by ranking position when the table closes. This ${noun} moves rating points, not places directly.`);
       const cut = (DATA.cuts || []).find(c => c.cut_line_id === p.cut.cut_line_id);
@@ -651,7 +662,6 @@ export function fixtureCardModel(idx, DATA, f) {
       rankSentence = qual.length === facts.length
         ? `${qual.map(x => x.team).join(" and ")} ${qual.length > 1 ? "have" : "has"} already qualified — nothing here changes who goes.`
         : `Neither side is near a qualifying line — this ${stageNoun(stage)} moves ranking points only.`;
-      how.push(`Qualification from this ranking is decided at its cut-off; today's gaps are wider than the contention band (README: contention bands).`);
     }
   }
 
@@ -676,8 +686,8 @@ export function fixtureCardModel(idx, DATA, f) {
     const condClause = cond.kind === "structured"
       ? ` But ${host} are already in as hosts, so ${cond.clause}.`
       : cond.kind === "marker"
-        ? (host ? ` But ${host} are already in as hosts, so who receives it is conditional — see how it works.`
-                : ` Who receives it is conditional — see how it works.`)
+        ? (host ? ` But ${host} are already in as hosts, so who receives it is conditional — the route below carries the rule.`
+                : ` Who receives it is conditional — the route below carries the rule.`)
         : "";
     if (wins != null && downstream === 0) {
       placeSentence = `${wins} win${wins === 1 ? "" : "s"} from an Olympic place.` +
@@ -706,37 +716,29 @@ export function fixtureCardModel(idx, DATA, f) {
       ? cond.kind === "marker" || cond.kind === "structured"
       : CONDITION_ASSERTED.test(String(l.eligibility_note ?? "")) ||
         CONDITION_ASSERTED.test(String(l.entry_condition ?? ""));
-    how.push(path.map(l => {
-      const n = Number(l.berths) > 0 ? `${l.berths} place${Number(l.berths) === 1 ? "" : "s"}` :
-        Number(l.qualifiers) > 0 ? `${l.qualifiers} advance` : "advancement";
-      return `${n}${stepConditional(l) ? " (conditional)" : ""} → ${idx.node[l.to_id]?.event_name ?? idx.node[l.to_id]?.label ?? l.to_id}`;
-    }).join("; ") + ".");
     for (const l of path.slice(0, -1)) {
       if (!stepConditional(l)) continue;
-      const from = idx.node[l.from_id]?.label ?? l.from_id;
-      how.push(Number(l.qualifiers) > 0
-        ? `A route condition applies at ${from}: how many teams advance through that step, or which, can change — the exact rule is quoted in the sheet text below.`
-        : `A condition applies at ${from} — the exact rule is quoted in the sheet text below.`);
+      note(l.link_id, Number(l.qualifiers) > 0
+        ? `A route condition applies on this step: how many teams advance through it, or which, can change — the exact rule is in the Sheet text.`
+        : `A condition applies on this step — the exact rule is in the Sheet text.`);
     }
-    if (cond.kind === "structured") how.push(`The winner may not receive the berth: ${cond.clause} (structured condition on ${berthEdge.link_id}).`);
-    if (cond.kind === "marker") how.push(Number(berthEdge.berths) > 0
-      ? `A recipient condition applies on the final step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change — the exact rule is quoted in the sheet text below.`
-      : `A condition applies on the final step — the exact rule is quoted in the sheet text below.`);
-    // Every route the trace shows is covered here or explicitly delegated:
-    // other DIRECT routes are named by what separates them — their final
-    // step — and their sheet text joins the verbatim layer; ranking-points
-    // routes are the ranking paragraph's territory above.
+    if (cond.kind === "structured") note(berthEdge.link_id, `The winner may not receive the berth: ${cond.clause} (structured condition).`);
+    if (cond.kind === "marker") note(berthEdge.link_id, Number(berthEdge.berths) > 0
+      ? `A recipient condition applies on this step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change — the exact rule is in the Sheet text.`
+      : `A condition applies on this step — the exact rule is in the Sheet text.`);
+    // Other direct routes: their conditions render on their own final
+    // steps, and their sheet text joins the verbatim layer. Ranking-points
+    // routes are the ranking mechanism's territory (its note sits on the
+    // cut-carrying edge).
     const otherFinals = new Set();
     for (const r of routesFrom(idx, compId)) {
       if (r.some(l => l.relationship === "RANKING_POINTS")) continue;
       const last = r[r.length - 1];
       if (last.link_id === berthEdge.link_id || otherFinals.has(last.link_id)) continue;
       otherFinals.add(last.link_id);
-      const dest = idx.node[last.from_id]?.label ?? last.from_id;
-      const n = Number(last.berths) > 0 ? `${last.berths} place${Number(last.berths) === 1 ? "" : "s"}` : "a place";
       const oc = conditionState(last, hostInField(idx, last.to_id));
-      how.push(`A separate route ends differently: ${n} decided at ${dest} (${r.length} step${r.length === 1 ? "" : "s"} from here) — traced under The route.` +
-        (oc.kind === "marker" || oc.kind === "structured" ? ` A recipient condition applies on that route's final step — quoted in the sheet text below.` : ""));
+      if (oc.kind === "structured") note(last.link_id, `The winner may not receive the berth: ${oc.clause} (structured condition).`);
+      else if (oc.kind === "marker") note(last.link_id, `A recipient condition applies on this step: who receives can change — the exact rule is in the Sheet text.`);
       for (const l of r) {
         pushQuote(l.link_id, "criterion", l.criterion);
         pushQuote(l.link_id, "entry_condition", l.entry_condition);
@@ -749,7 +751,56 @@ export function fixtureCardModel(idx, DATA, f) {
   const sentence = rankSentence && placeSentence ? `${rankSentence} ${placeSentence}`
     : rankSentence ?? placeSentence
     ?? `No qualification route is mapped from this competition yet.`;
-  return { sentence, how, quotes, rankLevel, compLabel: comp?.label ?? compId, date, teams: [t1, t2], stage };
+  return { sentence, edgeNotes, quotes, rankLevel, compLabel: comp?.label ?? compId, date, teams: [t1, t2], stage };
+}
+
+// Is a route IN PLAY for these teams? Judged by the cut-lines its edges
+// carry, under the contention band: a route is settled when every reading
+// for both teams sits beyond the band (comfortably inside or hopelessly
+// out) with nobody provisional. Routes with no cut-lines, or no standings
+// for either team, are always shown — absence of data never suppresses.
+export function routeMateriality(idx, DATA, route, teams) {
+  const readings = [];
+  let anyLive = false, sawTeam = false;
+  for (const l of route) {
+    if (!l.cut_line_id) continue;
+    const rid = l.from_id;
+    const th = (idx.thresholds[rid] || []).find(t => t.cut.cut_line_id === l.cut_line_id);
+    if (!th) continue;
+    const rows = idx.standBy[rid] || [];
+    const edge = rows.find(x => x.rank === th.atRank);
+    for (const team of (teams || []).filter(Boolean)) {
+      const r = rows.find(x => idx.teamKey(x.team) === idx.teamKey(team));
+      if (!r) continue;
+      if (th.appliesTo) {
+        const only = String(th.appliesTo).split(",").map(x => idx.teamKey(x.trim()));
+        if (!only.includes(idx.teamKey(r.team))) continue;
+      }
+      sawTeam = true;
+      if (r.provisional === "Y") { anyLive = true; continue; }
+      if (r.already_qualified === "Y") { readings.push(`${r.team} has already qualified`); continue; }
+      const pts = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
+      const places = Math.abs(r.rank - th.atRank);
+      const contending = pts != null ? pts <= CONTENTION.CONTENDING_MAX_RATING : places <= CONTENTION.AT_STAKE_MAX_PLACES;
+      if (contending) { anyLive = true; continue; }
+      const inside = r.rank <= th.atRank;
+      readings.push(`${r.team} is ${pts != null ? `${pts} rating points` : `${places} places`} ${inside ? "clear of" : "short of"} this line`);
+    }
+  }
+  if (anyLive || !sawTeam || !readings.length) return { inPlay: true };
+  return { inPlay: false, reason: readings.join("; ") };
+}
+
+// What a route's header must say: how many places, decided where, and —
+// when a cut-line governs it — WHICH line, by the cut's own name.
+export function routeHeader(idx, DATA, route) {
+  const last = route[route.length - 1];
+  const dest = idx.node[last.from_id]?.label ?? last.from_id;
+  const n = last.relationship === "REALLOCATION" ? "a reallocated place"
+    : Number(last.berths) > 0 ? `${last.berths} place${Number(last.berths) === 1 ? "" : "s"}` : "a place";
+  const cutEdge = [...route].reverse().find(l => l.cut_line_id);
+  const cutName = cutEdge ? (DATA.cuts || []).find(c => c.cut_line_id === cutEdge.cut_line_id)?.name : null;
+  return `${n} decided at ${dest}${cutName ? ` · ${cutName}` : ""}`;
 }
 
 function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
@@ -883,11 +934,16 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           const pts = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
           if (r.provisional === "Y")
             return <Line key={r.team} tone="open" text={`${r.team} currently HOLDS this place (rank ${r.rank}) but it is not settled until ${c.deadline}.`} />;
-          if (inside && places >= 4)
+          // Tone is governed by the CONTENTION band, both directions:
+          // red is for a live chase, not for any team below any line.
+          const inBand = pts != null ? pts <= CONTENTION.CONTENDING_MAX_RATING : places <= CONTENTION.AT_STAKE_MAX_PLACES;
+          if (inside && !inBand)
             return <Line key={r.team} tone="live" text={`${r.team} is ${r.rank}${nth(r.rank)} — comfortably inside. The cut is at rank ${th.atRank}, ${places} places below, so this step is effectively secure for them${pts != null ? ` (${pts} rating points of cushion)` : ""}.`} />;
           if (inside)
             return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — inside, but only ${places === 0 ? "on" : `${places} place${places === 1 ? "" : "s"} above`} the cut at rank ${th.atRank}${pts != null ? `, a margin of ${pts} rating points` : ""}. Contested.`} />;
-          return <Line key={r.team} tone="fault" text={`${r.team} is ${r.rank}${nth(r.rank)} — OUTSIDE. Needs to climb ${places} place${places === 1 ? "" : "s"} to rank ${th.atRank}${pts != null ? `, ${pts} rating points away` : ""}.`} />;
+          if (inBand)
+            return <Line key={r.team} tone="fault" text={`${r.team} is ${r.rank}${nth(r.rank)} — OUTSIDE. Needs to climb ${places} place${places === 1 ? "" : "s"} to rank ${th.atRank}${pts != null ? `, ${pts} rating points away` : ""}.`} />;
+          return <Line key={r.team} tone="muted" text={`${r.team} is ${r.rank}${nth(r.rank)} — ${pts != null ? `${pts} rating points` : `${places} places`} from this line, beyond the contention band. Not in play for them today.`} />;
         })}
       </div>
     );
@@ -902,9 +958,12 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     </div>
   );
 
-  function PathwayTrace({ compId, teams, quotes = true }) {
+  function PathwayTrace({ compId, teams, quotes = true, notes = null }) {
     const routes = routesToBerth(compId).sort((a, b) => a.length - b.length);
     const here = idx.node[compId];
+    // Out-of-contention routes collapse to their reason; one click (or
+    // evidence mode) restores the full trace.
+    const [forcedOpen, setForcedOpen] = useState({});
     if (!routes.length) return <Empty text="No route to an Olympic berth from here yet." />;
 
     const Node = ({ label, sub, tone }) => (
@@ -919,12 +978,19 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
         </div>
       </div>
     );
-    const Step = ({ l, teams, quotes = true }) => {
+    const Step = ({ l, teams, quotes = true, notes = null }) => {
       const n = l.relationship === "REALLOCATION" ? "reallocated place"
+              : l.relationship === "RANKING_CONTINGENCY" ? "replacements only"
               : l.berths ? `${l.berths} berth${l.berths === 1 ? "" : "s"}`
               : l.qualifiers ? `${l.qualifiers} advance`
               : l.relationship === "RANKING_POINTS" ? "rating points"
               : l.qualifiers_note || "count unknown";
+      // The prefix is a fact of the RELATIONSHIP, never of entry_condition
+      // presence: 43 edges across five relationships carry an
+      // entry_condition (the fencing zonal entries, the main FOGQT field),
+      // and only REALLOCATION is actually a fallback.
+      const prefix = l.relationship === "REALLOCATION" ? "fallback route · "
+                   : l.entry_condition ? "conditional entry · " : "";
       return (
         <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "3px 0 3px 0" }}>
           <span style={{ width: 9, flexShrink: 0, display: "flex", justifyContent: "center" }}>
@@ -932,8 +998,17 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           </span>
           <div style={{ minWidth: 0, paddingLeft: 1 }}>
             <div style={{ font: `500 11px/1.3 ${MONO}`, color: l.entry_condition ? C.open : l.confidence === "AMBIGUOUS" ? C.fault : C.brass }}>
-              ↓ {l.entry_condition ? "fallback route · " : ""}{n}
+              ↓ {prefix}{n}
             </div>
+            {/* Derived sentences that belong to THIS edge — the ranking
+                mechanism on its cut-carrying edge, conditions on their
+                conditional step. Not sheet text: these render always. */}
+            {(notes || []).map((t, i) => (
+              <div key={i} style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.ink, marginTop: 3,
+                padding: "6px 9px", background: "#14507D0C", borderLeft: `2px solid ${C.rank}`, borderRadius: "0 3px 3px 0" }}>
+                {t}
+              </div>
+            ))}
             {quotes && l.entry_condition && (
               <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.open, marginTop: 3,
                 padding: "6px 9px", background: "#A8761A0E", borderLeft: `2px solid ${C.open}`, borderRadius: "0 3px 3px 0" }}>
@@ -968,27 +1043,34 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     return (
       <div style={{ display: "grid", gap: 12 }}>
         {routes.slice(0, 8).map((r, ri) => {
-          // The header states what SEPARATES this route — its final step —
-          // not an ordinal: "2 places decided at the OQT" vs "1 place
-          // decided at the play-off" is the difference a reader needs.
-          const last = r[r.length - 1];
-          const dest = idx.node[last.from_id]?.label ?? last.from_id;
-          const n = last.relationship === "REALLOCATION" ? "a reallocated place"
-            : Number(last.berths) > 0 ? `${last.berths} place${Number(last.berths) === 1 ? "" : "s"}` : "a place";
+          // The header states what SEPARATES this route — its final step,
+          // and the cut-line's own name where one governs it — BEFORE any
+          // per-team line, so "6th — OUTSIDE" and "6th — comfortably
+          // inside" read as the different lines they are.
+          const mat = routeMateriality(idx, DATA, r, teams);
+          const open = mat.inPlay || evidence || !!forcedOpen[ri];
           return (
           <div key={ri} style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "13px 15px" }}>
             <div style={{ font: `500 10px/1 ${MONO}`, color: C.muted, letterSpacing: ".09em",
-              textTransform: "uppercase", marginBottom: 11 }}>
-              {ri === 0 ? "Shortest route" : `Route ${ri + 1}`} — {n} decided at {dest} · {r.length} step{r.length > 1 ? "s" : ""}
+              textTransform: "uppercase", marginBottom: open ? 11 : 6 }}>
+              {ri === 0 ? "Shortest route" : `Route ${ri + 1}`} — {routeHeader(idx, DATA, r)} · {r.length} step{r.length > 1 ? "s" : ""}
               {r.some(l => l.relationship === "REALLOCATION") ? " · reallocation, not an extra place" : ""}
             </div>
-            <Node label={here?.label || compId} sub="you are here" tone="start" />
-            {r.map((l, i) => {
+            {!open && (
+              <div style={{ font: `400 12px/1.5 ${SANS}`, color: C.muted }}>
+                Not in play here — {mat.reason}.{" "}
+                <span role="button" tabIndex={0} onClick={() => setForcedOpen({ ...forcedOpen, [ri]: true })}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setForcedOpen({ ...forcedOpen, [ri]: true }); } }}
+                  style={{ color: C.brass, cursor: "pointer", font: `500 11px/1.5 ${MONO}` }}>show the trace ▸</span>
+              </div>
+            )}
+            {open && <Node label={here?.label || compId} sub="you are here" tone="start" />}
+            {open && r.map((l, i) => {
               const tgt = idx.node[l.to_id];
               const isEnd = l.to_type === "OLYMPIC_EVENT";
               return (
                 <React.Fragment key={l.link_id}>
-                  <Step l={l} teams={teams} quotes={quotes} />
+                  <Step l={l} teams={teams} quotes={quotes} notes={notes?.[l.link_id]} />
                   <Node
                     label={tgt?.event_name || tgt?.label || l.to_id}
                     sub={isEnd ? `${tgt?.quota_total} team field` : tgt?.confederation && tgt.confederation !== "GLOBAL" ? tgt.confederation : (tgt?.format || "")}
@@ -1433,16 +1515,15 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                         borderRadius: 4, font: `400 13px/1.6 ${SANS}`, color: C.ink, marginBottom: 8 }}>
                         {m.sentence}
                       </div>
-                      {/* Layer 2 — how it works, collapsed. */}
-                      <Fold label="How it works" open={evidence}>
-                        {m.how.map((h, j) => (
-                          <div key={j} style={{ font: `400 12px/1.55 ${SANS}`, color: C.ink, marginTop: j ? 5 : 0 }}>{h}</div>
-                        ))}
-                      </Fold>
-                      {/* Layer 3 — the route, stated once, structurally. */}
-                      <Fold label="The route" open={evidence}>
-                        <PathwayTrace compId={f[0]} teams={[f[2], f[3]]} quotes={false} />
-                      </Fold>
+                      {/* The route — auto-expanded, no dropdown. Derived
+                          sentences (mechanism, conditions) render on their
+                          edges via edgeNotes; there is no separate "how it
+                          works" prose to retype the trace. */}
+                      <div style={{ font: `500 10px/1 ${MONO}`, color: C.muted, letterSpacing: ".08em",
+                        textTransform: "uppercase", margin: "2px 0 6px 1px" }}>The route</div>
+                      <div style={{ marginBottom: 8 }}>
+                        <PathwayTrace compId={f[0]} teams={[f[2], f[3]]} quotes={false} notes={m.edgeNotes} />
+                      </div>
                       {/* Layer 4 — sheet text, verbatim, adjacent to the derivation.
                           This is the fbl-005 protection; evidence mode expands it. */}
                       <Fold label="Sheet text (verbatim)" open={evidence}>
@@ -1681,8 +1762,11 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           within the documented contention bands (README: within 25 rating points of a line, or 3
           places where no rating exists). Conditional berth rules are either structured in the data
           or quoted verbatim from the sheet — when a condition can't be resolved, the card says so
-          rather than naming a winner. Fixture times are shown exactly as entered from their sources
-          with the zone unverified unless declared.
+          rather than naming a winner. The app compares today's table to the cut-lines and does not
+          model rating changes from results: ICC-style rating movement depends on both sides'
+          ratings, so a win can move a team a lot, a little, or the wrong way — "what happens if
+          they win" is deliberately unanswered. Fixture times are shown exactly as entered from
+          their sources with the zone unverified unless declared.
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>
