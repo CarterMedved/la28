@@ -110,8 +110,8 @@ Tests (all must pass before trusting a change):
 > `OTHER_SEMIFINALISTS` (deliberately non-definite — the draw decides, so
 > it renders the marker form even when filled). FAIL-CLOSED: blank,
 > half-filled or unrecognised values render "who receives it is
-> conditional — the route below carries the rule", never a flattened
-> sentence; the
+> conditional", never a flattened sentence — the rule itself renders on
+> the conditional step, inline or opening in place (INLINE_RULE_MAX); the
 > unconditional sentence is reachable only when eligibility_note,
 > entry_condition and conditional-shaped criterion language are ALL absent
 > and both columns are blank (test/sentence.mjs pins every state). Grow

@@ -351,7 +351,7 @@ export function buildIndex(DATA) {
         const unsat = (blocked[rid] || []).filter(b => b.reason === "unsatisfiable");
         if (unsat.length)
           return { level: "unknown", rid, cut: unsat[0].cut,
-            why: `${unsat.map(b => b.cut.name).join("; ")}: blocked by declaration (computability=UNSATISFIABLE) — no reading of the allocation seats its result, so no top-${unsat[0].cut.n ?? "N"} is computed or displayed. The recorded evidence is in the cut's notes below. Resolves when the reading is settled and the marker cleared.` };
+            why: `${unsat.map(b => b.cut.name).join("; ")}: blocked by declaration (computability=UNSATISFIABLE) — no reading of the allocation seats its result, so no top-${unsat[0].cut.n ?? "N"} is computed or displayed. Resolves when the reading is settled and the marker cleared.` };
         const basis = (blocked[rid] || []).filter(b => b.reason === "basis");
         if (basis.length)
           return { level: "unknown", rid,
@@ -491,6 +491,28 @@ const KNOWN_RECIPIENTS = {
 const CONDITIONAL_SHAPE = /\bshould\b|\bunless\b|\bif\b|\bconditional\b|already qualified|runner[- ]up|\binstead\b|passes to/i;
 const CONDITION_ASSERTED = /\bshould\b|\bunless\b|\bconditional\b|passes to|\bwhether\b|not guaranteed|not automatic|\bonly (?:live )?if\b|reduced by \w+ if\b|(?:^|[.:;|] *)if\b/i;
 
+// The recorded rule for a conditional edge — the source prose a reader
+// needs to resolve the condition: the entry condition whenever one
+// exists, plus whichever other field ASSERTS the condition. Null for
+// edges with no asserting prose (descriptive notes stay in the audit
+// layer only — they are not rules).
+export function recordedRule(edge) {
+  const parts = [];
+  if (edge?.entry_condition) parts.push(String(edge.entry_condition));
+  if (edge?.eligibility_note && CONDITION_ASSERTED.test(String(edge.eligibility_note))) parts.push(String(edge.eligibility_note));
+  if (!parts.length && edge?.criterion && CONDITION_ASSERTED.test(String(edge.criterion))) parts.push(String(edge.criterion));
+  return parts.length ? parts.join(" ") : null;
+}
+
+// Inline-or-fold threshold for a recorded rule, ONE number: 134
+// characters — the length of the longest signpost sentence this replaced
+// ("A route condition applies on this step: … — the exact rule is in the
+// Sheet text."). At or under it, showing the rule can never cost more
+// space than pointing at it did. Over it, the rule opens IN PLACE on the
+// step it governs. No string may tell the reader to go and find
+// something.
+export const INLINE_RULE_MAX = 134;
+
 export function conditionState(edge, hostName) {
   const t = edge?.condition_trigger == null ? null : String(edge.condition_trigger).trim().toUpperCase() || null;
   const r = edge?.condition_recipient == null ? null : String(edge.condition_recipient).trim().toUpperCase() || null;
@@ -530,7 +552,7 @@ export function routesFrom(idx, compId, origin = null, depth = 0, seen = new Set
 
 // Shortest direct (non-ranking) route, taken FROM the same enumeration
 // the trace renders — never a separate search. This is what makes the
-// sentence's "the route below carries the rule" sound by construction:
+// conditional edge reachable from the rendered routes by construction:
 // the primary path IS one of the rendered routes (an ungated BFS here
 // once could, in principle, pick a region-crossing path the gated trace
 // would never show). test/sentence.mjs pins the remaining data-shape
@@ -678,8 +700,8 @@ export function fixtureCardModel(idx, DATA, f) {
     const condClause = cond.kind === "structured"
       ? ` But ${host} are already in as hosts, so ${cond.clause}.`
       : cond.kind === "marker"
-        ? (host ? ` But ${host} are already in as hosts, so who receives it is conditional — the route below carries the rule.`
-                : ` Who receives it is conditional — the route below carries the rule.`)
+        ? (host ? ` But ${host} are already in as hosts, so who receives it is conditional.`
+                : ` Who receives it is conditional.`)
         : "";
     if (wins != null && downstream === 0) {
       placeSentence = `${wins} win${wins === 1 ? "" : "s"} from an Olympic place.` +
@@ -711,13 +733,13 @@ export function fixtureCardModel(idx, DATA, f) {
     for (const l of path.slice(0, -1)) {
       if (!stepConditional(l)) continue;
       note(l.link_id, Number(l.qualifiers) > 0
-        ? `A route condition applies on this step: how many teams advance through it, or which, can change — the exact rule is in the Sheet text.`
-        : `A condition applies on this step — the exact rule is in the Sheet text.`);
+        ? `A route condition applies on this step: how many teams advance through it, or which, can change.`
+        : `A condition applies on this step.`);
     }
     if (cond.kind === "structured") note(berthEdge.link_id, `The winner may not receive the berth: ${cond.clause} (structured condition).`);
     if (cond.kind === "marker") note(berthEdge.link_id, Number(berthEdge.berths) > 0
-      ? `A recipient condition applies on this step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change — the exact rule is in the Sheet text.`
-      : `A condition applies on this step — the exact rule is in the Sheet text.`);
+      ? `A recipient condition applies on this step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change.`
+      : `A condition applies on this step.`);
     // Other direct routes: their conditions render on their own final
     // steps, and their sheet text joins the verbatim layer. Ranking-points
     // routes are the ranking mechanism's territory (its note sits on the
@@ -730,7 +752,7 @@ export function fixtureCardModel(idx, DATA, f) {
       otherFinals.add(last.link_id);
       const oc = conditionState(last, hostInField(idx, last.to_id));
       if (oc.kind === "structured") note(last.link_id, `The winner may not receive the berth: ${oc.clause} (structured condition).`);
-      else if (oc.kind === "marker") note(last.link_id, `A recipient condition applies on this step: who receives can change — the exact rule is in the Sheet text.`);
+      else if (oc.kind === "marker") note(last.link_id, `A recipient condition applies on this step: who receives can change.`);
       for (const l of r) {
         pushQuote(l.link_id, "criterion", l.criterion);
         pushQuote(l.link_id, "entry_condition", l.entry_condition);
@@ -809,7 +831,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
   const [sportFilter, setSportFilter] = useState("All");
   const [calMode, setCalMode] = useState("events");
   const [openFx, setOpenFx] = useState(null);
-  // Evidence mode (global audit toggle): expands every "Sheet text
+  // Evidence mode (global audit toggle): expands every "rules as recorded
   // (verbatim)" layer and reveals the internal verdict blocks on cards.
   const [evidence, setEvidence] = useState(false);
 
@@ -958,6 +980,28 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     </div>
   );
 
+  // A conditional step CARRIES its rule: inline when the rule is no
+  // longer than the signpost it replaced (INLINE_RULE_MAX), otherwise
+  // opening in place — never a pointer to somewhere the reader can't go.
+  const RecordedRule = ({ text }) => {
+    const [open, setOpen] = useState(false);
+    if (text.length <= INLINE_RULE_MAX || open) return (
+      <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.ink, marginTop: 3,
+        padding: "6px 9px", background: "#9A6F300E", borderLeft: `2px solid ${C.brass}`, borderRadius: "0 3px 3px 0" }}>
+        <span style={{ font: `500 9.5px/1 ${MONO}`, color: C.brass, letterSpacing: ".08em",
+          textTransform: "uppercase", display: "block", marginBottom: 3 }}>The rule as recorded</span>
+        «{text}»
+      </div>
+    );
+    return (
+      <div style={{ marginTop: 3 }}>
+        <span role="button" tabIndex={0} onClick={() => setOpen(true)}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(true); } }}
+          style={{ color: C.brass, cursor: "pointer", font: `500 11px/1.5 ${MONO}` }}>the rule as recorded ▸</span>
+      </div>
+    );
+  };
+
   function PathwayTrace({ compId, teams, quotes = true, notes = null }) {
     const routes = routesToBerth(compId).sort((a, b) => a.length - b.length);
     const here = idx.node[compId];
@@ -1009,6 +1053,10 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                 {t}
               </div>
             ))}
+            {/* Every condition is reachable from the step it governs. When
+                the full quote blocks are off (fixture cards), the asserting
+                prose renders here — inline or opening in place. */}
+            {!quotes && recordedRule(l) && <RecordedRule text={recordedRule(l)} />}
             {quotes && l.entry_condition && (
               <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.open, marginTop: 3,
                 padding: "6px 9px", background: "#A8761A0E", borderLeft: `2px solid ${C.open}`, borderRadius: "0 3px 3px 0" }}>
@@ -1526,7 +1574,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                       </div>
                       {/* Layer 4 — sheet text, verbatim, adjacent to the derivation.
                           This is the fbl-005 protection; evidence mode expands it. */}
-                      <Fold label="Sheet text (verbatim)" open={evidence}>
+                      <Fold label="The rules as recorded (verbatim)" open={evidence}>
                         {m.quotes.map((q, j) => (
                           <div key={j} style={{ font: `400 11.5px/1.55 ${SANS}`, color: C.muted, marginTop: j ? 6 : 0 }}>
                             <span style={{ font: `500 10px/1 ${MONO}`, color: C.brass }}>{q.id} · {q.field}: </span>
@@ -1759,8 +1807,8 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           Verdicts are structural: derived from the link graph, the captured standings, and declared
           cut-line rules. Proximity to a line is arithmetic on today's table — no results, seeding,
           form or probability is consulted, and nothing here is a prediction. "In contention" means
-          within the documented contention bands (README: within 25 rating points of a line, or 3
-          places where no rating exists). Conditional berth rules are either structured in the data
+          within the documented contention bands: 25 rating points of a line, or 3 places
+          where no rating exists. Conditional berth rules are either structured in the data
           or quoted verbatim from the sheet — when a condition can't be resolved, the card says so
           rather than naming a winner. The app compares today's table to the cut-lines and does not
           model rating changes from results: ICC-style rating movement depends on both sides'
@@ -1964,9 +2012,9 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                 boxShadow: view === k ? "0 1px 2px #14202B14" : "none",
               }}>{l}</button>
             ))}
-            {/* Evidence mode: expands every "Sheet text (verbatim)" layer and
+            {/* Evidence mode: expands every "rules as recorded" layer and
                 reveals the internal verdict blocks. The audit affordance. */}
-            <button onClick={() => setEvidence(!evidence)} title="Expand all sheet text and internal verdicts"
+            <button onClick={() => setEvidence(!evidence)} title="Expand all recorded rules and internal verdicts"
               style={{ font: `500 12px/1 ${SANS}`, padding: "8px 15px", borderRadius: 3, cursor: "pointer",
                 border: `1px dashed ${evidence ? C.brass : C.rule}`, background: evidence ? "#9A6F3014" : "transparent",
                 color: evidence ? C.brass : C.muted }}>

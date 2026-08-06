@@ -27,7 +27,7 @@ await build({
            "xlsx": root + "test/stubs/xlsx.js", "papaparse": root + "test/stubs/papaparse.js" },
   logLevel: "silent",
 });
-const { buildIndex, fixtureCardModel, normalise, routesFrom, routeMateriality, routeHeader } =
+const { buildIndex, fixtureCardModel, normalise, routesFrom, routeMateriality, routeHeader, recordedRule, INLINE_RULE_MAX } =
   await import(pathToFileURL(root + "test/.build/sentence.bundle.mjs"));
 
 const ds = loadWorkbook(root + "data/LA28_Qualification_Database_v22.xlsx");
@@ -54,7 +54,7 @@ const check = (name, ok, detail = "") => {
 
 // The flattened shape that must never appear on a conditional edge.
 const FLAT = /tournament winner takes it|winner qualifies|winner takes the (berth|place)/i;
-const MARKER = /conditional — the route below carries the rule/i;
+const MARKER = /who receives it is conditional\./i;
 const link = (raw, id) => raw.links.find(x => x.link_id === id);
 
 // ---- fbl-005: a knockout fixture on the conditional edge ----
@@ -197,7 +197,30 @@ console.log("cricket routes: named lines, settled route suppressed:");
     m.quotes.filter(q => q.id === "icc-w-host-fallback").length === 1);
 }
 
-// ---- the marker's pointer: "the route below carries the rule" ----
+// ---- the step carries the rule: inline at ≤ INLINE_RULE_MAX, else opening in place ----
+console.log("rules live on their steps; nothing signposts:");
+{
+  const { data } = ctx();
+  const L = (id) => (data.links || []).find(l => l.link_id === id);
+  const len = (id) => (recordedRule(L(id)) || "").length;
+  check("threshold = 134, the longest signpost sentence it replaced", INLINE_RULE_MAX === 134);
+  check("bkb-032/033/034/035 inline (99/59/59/59 chars, all ≤ threshold)",
+    ["bkb-032", "bkb-033", "bkb-034", "bkb-035"].every(id => len(id) > 0 && len(id) <= INLINE_RULE_MAX));
+  check("fbl-005/fbl-012/bkb-001/bkb-027 open in place (212/221/311/159 chars, all > threshold)",
+    ["fbl-005", "fbl-012", "bkb-001", "bkb-027"].every(id => len(id) > INLINE_RULE_MAX));
+  check("descriptive notes yield no rule (fbl-013 stays audit-only)", recordedRule(L("fbl-013")) === null);
+  const SIGNPOST = /Sheet text|README|see how it works|carries the rule|see the route|is in the|quoted .* below/i;
+  const cards = [
+    "fiba-women-s-americup-2027-south-american-qualifier",
+    "pakistan-women-s-cricket-team-in-sri-lanka-in-2026",
+    "afc-womens-asian-cup-2026",
+  ].map(c => model(ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage]).find(x => x[0] === c)));
+  check("no design card carries a signpost string, in sentence or on any edge",
+    cards.every(m => !SIGNPOST.test(m.sentence) && !SIGNPOST.test(allNotes(m))),
+    cards.map(m => m.sentence).join(" § "));
+}
+
+// ---- the marker's edge is always in a rendered route ----
 // The primary path is drawn from the SAME enumeration the trace renders,
 // so the conditional edge is in a rendered route by construction. The one
 // data-shape assumption left is the trace's 8-route display cap — pinned
