@@ -197,5 +197,30 @@ console.log("cricket routes: named lines, settled route suppressed:");
     m.quotes.filter(q => q.id === "icc-w-host-fallback").length === 1);
 }
 
+// ---- the marker's pointer: "the route below carries the rule" ----
+// The primary path is drawn from the SAME enumeration the trace renders,
+// so the conditional edge is in a rendered route by construction. The one
+// data-shape assumption left is the trace's 8-route display cap — pinned
+// here over the whole graph so growth breaks the harness, not the pointer.
+console.log("the sentence never points at a route that doesn't render:");
+{
+  const { data, idx } = ctx();
+  let over8WithDirect = 0, over8NoDirect = 0, orphaned = 0;
+  for (const c of (data.comps || [])) {
+    const routes = routesFrom(idx, c.competition_id).sort((a, b) => a.length - b.length);
+    const direct = routes.filter(r => r.every(l => l.relationship !== "RANKING_POINTS"))[0];
+    if (routes.length > 8) { direct ? over8WithDirect++ : over8NoDirect++; }
+    if (!direct) continue;   // no direct route → no placeSentence → no marker to point
+    const rendered = new Set(routes.slice(0, 8).flat().map(l => l.link_id));
+    if (direct.some(l => !rendered.has(l.link_id))) orphaned++;
+  }
+  check("no marker-capable competition exceeds the 8-route display cap", over8WithDirect === 0, `${over8WithDirect} over cap`);
+  check("every primary path is inside the rendered route set", orphaned === 0, `${orphaned} orphaned`);
+  // Known display truncation, not a pointer risk: the fencing ranking
+  // feeders (12 routes, no direct route, no possible marker) show
+  // "+4 more routes" in the trace. Not silent, so not asserted to zero.
+  console.log(`  (info) ${over8NoDirect} route-only competitions truncate at 8 with the "+N more" chip`);
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : "\nSentence engine proven: conditionals cannot flatten, enums fail closed, sentences derive from the graph.");
 process.exit(failures ? 1 : 0);

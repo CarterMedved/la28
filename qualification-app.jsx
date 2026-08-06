@@ -528,25 +528,17 @@ export function routesFrom(idx, compId, origin = null, depth = 0, seen = new Set
   return res;
 }
 
-// Shortest direct (non-ranking) route from a competition to an Olympic
-// event, as link rows. BFS over outbound placement edges.
+// Shortest direct (non-ranking) route, taken FROM the same enumeration
+// the trace renders — never a separate search. This is what makes the
+// sentence's "the route below carries the rule" sound by construction:
+// the primary path IS one of the rendered routes (an ungated BFS here
+// once could, in principle, pick a region-crossing path the gated trace
+// would never show). test/sentence.mjs pins the remaining data-shape
+// assumption: no competition exceeds the trace's 8-route display cap.
 export function shortestDirectRoute(idx, compId) {
-  const seen = new Set([compId]);
-  let frontier = [{ id: compId, path: [] }];
-  for (let d = 0; d < 8 && frontier.length; d++) {
-    const next = [];
-    for (const { id, path } of frontier) {
-      for (const l of (idx.outbound[id] || [])) {
-        if (l.relationship === "RANKING_POINTS") continue;
-        if (l.to_type === "OLYMPIC_EVENT") return [...path, l];
-        if (seen.has(l.to_id)) continue;
-        seen.add(l.to_id);
-        next.push({ id: l.to_id, path: [...path, l] });
-      }
-    }
-    frontier = next;
-  }
-  return null;
+  return routesFrom(idx, compId)
+    .filter(r => r.every(l => l.relationship !== "RANKING_POINTS"))
+    .sort((a, b) => a.length - b.length)[0] ?? null;
 }
 
 // Host already inside the field for an event? Derived from the HOST_*
@@ -759,6 +751,11 @@ export function fixtureCardModel(idx, DATA, f) {
 // for both teams sits beyond the band (comfortably inside or hopelessly
 // out) with nobody provisional. Routes with no cut-lines, or no standings
 // for either team, are always shown — absence of data never suppresses.
+// This is a RANKING-ONLY test, stated as such: a placement route carries
+// nothing derivable that could settle it — the app does not model
+// results, and group standings/eliminations are not captured — so a
+// placement route can NEVER be suppressed. Do not fake generality here;
+// if placement materiality ever becomes derivable, it gets its own test.
 export function routeMateriality(idx, DATA, route, teams) {
   const readings = [];
   let anyLive = false, sawTeam = false;
@@ -941,8 +938,11 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
             return <Line key={r.team} tone="live" text={`${r.team} is ${r.rank}${nth(r.rank)} — comfortably inside. The cut is at rank ${th.atRank}, ${places} places below, so this step is effectively secure for them${pts != null ? ` (${pts} rating points of cushion)` : ""}.`} />;
           if (inside)
             return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — inside, but only ${places === 0 ? "on" : `${places} place${places === 1 ? "" : "s"} above`} the cut at rank ${th.atRank}${pts != null ? `, a margin of ${pts} rating points` : ""}. Contested.`} />;
+          // Red is for data faults only. A team inside the band is the
+          // contest worth watching — attention (brass), not alarm, and
+          // "chasing", not "OUTSIDE": say what is true and by how much.
           if (inBand)
-            return <Line key={r.team} tone="fault" text={`${r.team} is ${r.rank}${nth(r.rank)} — OUTSIDE. Needs to climb ${places} place${places === 1 ? "" : "s"} to rank ${th.atRank}${pts != null ? `, ${pts} rating points away` : ""}.`} />;
+            return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — chasing this place: ${places} place${places === 1 ? "" : "s"}${pts != null ? ` and ${pts} rating points` : ""} behind ${edge?.team ?? `rank ${th.atRank}`}${edge?.team ? ` at rank ${th.atRank}` : ""}.`} />;
           return <Line key={r.team} tone="muted" text={`${r.team} is ${r.rank}${nth(r.rank)} — ${pts != null ? `${pts} rating points` : `${places} places`} from this line, beyond the contention band. Not in play for them today.`} />;
         })}
       </div>
@@ -1045,7 +1045,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
         {routes.slice(0, 8).map((r, ri) => {
           // The header states what SEPARATES this route — its final step,
           // and the cut-line's own name where one governs it — BEFORE any
-          // per-team line, so "6th — OUTSIDE" and "6th — comfortably
+          // per-team line, so "6th — chasing" and "6th — comfortably
           // inside" read as the different lines they are.
           const mat = routeMateriality(idx, DATA, r, teams);
           const open = mat.inPlay || evidence || !!forcedOpen[ri];
