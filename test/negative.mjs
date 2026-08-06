@@ -818,5 +818,29 @@ console.log("\nprose-superlative (both directions):");
   if (!ok2) failures++;
 }
 
+// --- hygiene/count-gloss-length: the cap fires over INLINE_RULE_MAX, not under ---
+console.log("\ncount-gloss-length (both directions):");
+{
+  const aoa = readAoA();
+  // The pinned workbook predates the column: the mutant declares it, which
+  // also proves the loader passes an unknown Links column straight through.
+  aoa["Links"][0].push("count_gloss");
+  const cG = aoa["Links"][0].length - 1, cId = col(aoa, "Links", "link_id");
+  const r1 = aoa["Links"][1], r2 = aoa["Links"][2];
+  for (const r of [r1, r2]) while (r.length <= cG) r.push(null);
+  r1[cG] = "x".repeat(135);                                        // one over the cap → must fire
+  r2[cG] = "Two teams beyond the group winners play off for this slot.";  // a real gloss → must pass
+  const p = MUT + "count-gloss.xlsx";
+  writeAoA(aoa, p);
+  const f = runValidator(p).findings.find(x => x.rule === "hygiene/count-gloss-length");
+  const id1 = String(r1[cId]), id2 = String(r2[cId]);
+  const ok1 = !!f && f.severity === "WARN" && f.message.includes(`${id1}:`) && f.message.includes("134");
+  console.log(`  ${ok1 ? "PASS" : "FAIL"}  135-char gloss fires WARN naming the row and the shared cap`);
+  if (!ok1) failures++;
+  const ok2 = !f || !f.message.includes(`${id2}:`);
+  console.log(`  ${ok2 ? "PASS" : "FAIL"}  a gloss under the cap passes unseen`);
+  if (!ok2) failures++;
+}
+
 console.log(failures ? `\n${failures} negative test(s) FAILED` : "\nAll negative tests passed — every rule has been seen to fire.");
 process.exit(failures ? 1 : 0);

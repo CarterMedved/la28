@@ -6,6 +6,7 @@
 import type { Rule, Finding } from "../types.ts";
 import { finding, idOf } from "../types.ts";
 import { RAW, type Row } from "../../lib/load.ts";
+import { INLINE_RULE_MAX } from "../../lib/thresholds.ts";
 
 const NAN_LITERALS = new Set(["nan", "NaN", "None", "null", "NULL", "NaT"]);
 const ID_COL = /(_id|^leads_to)$/;
@@ -246,4 +247,29 @@ export const formulaCellsRule: Rule = ({ ds }) => {
     `${ds.formulaCells.length} formula cell(s) in the workbook. A Sheet recalculates on import — formulas are ` +
     `live data mutating outside the gate; store declared facts, derive in the validator (docs/stage-four.md). ` +
     `Delete them (e.g. [${sample.cell}]=${sample.formula.slice(0, 60)}):\n      ${lines.join("\n      ")}`)];
+};
+
+/**
+ * Links.count_gloss — the reader-facing "which N" rendered unlabelled in
+ * a route step's count line (approved 8 Aug 2026: DECLARED in the sheet,
+ * never detected). A gloss longer than INLINE_RULE_MAX is not a gloss —
+ * it is a note wearing the wrong column, and the count line it lives in
+ * would balloon past the signpost it replaced. The cap is shared with
+ * the app's inline-rule display (src/lib/thresholds.ts) so the two
+ * cannot drift. WARN, never ERROR: length is a quality bar, not a data
+ * fault, and a long gloss still renders.
+ */
+export const countGlossLength: Rule = ({ ds }) => {
+  const hits: string[] = [];
+  for (const l of ds.links) {
+    const v = (l as Record<string, unknown>).count_gloss;
+    if (v == null || typeof v !== "string" || v.trim() === "") continue;
+    if (v.length > INLINE_RULE_MAX)
+      hits.push(`${String((l as Record<string, unknown>).link_id)}: ${v.length} chars — "${v.slice(0, 60)}…"`);
+  }
+  if (!hits.length) return [];
+  return [finding("WARN", "hygiene/count-gloss-length", ds.sheetNameOf.links, "(aggregate)",
+    `${hits.length} count_gloss value(s) over ${INLINE_RULE_MAX} characters (INLINE_RULE_MAX, shared with the ` +
+    `app's inline display). A gloss states what the count means in one clause; anything longer belongs in ` +
+    `eligibility_note, where the audit layer carries it verbatim. Trim or relocate:\n      ${hits.join("\n      ")}`)];
 };

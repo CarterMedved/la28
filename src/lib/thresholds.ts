@@ -20,6 +20,13 @@ export interface CutLine {
   [k: string]: unknown;
 }
 
+// Inline-or-fold threshold for text shown on a route step (the app's
+// recorded-rule display, and the cap a Links.count_gloss must fit in —
+// hygiene/count-gloss-length WARNs above it). ONE number: 134 characters,
+// the length of the longest signpost sentence the inline display replaced.
+// Shared here so the validator's cap and the app's display cannot drift.
+export const INLINE_RULE_MAX = 134;
+
 // Legacy fallback for workbooks predating the Cut_Lines.continents column.
 // The list is part of the RULE, so it belongs on the cut-line row (cricket's
 // four exclude the Americas because the host holds that berth; FIBA files

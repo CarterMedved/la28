@@ -137,6 +137,19 @@ Tests (all must pass before trusting a change):
 > filled get the untyped "a condition applies" line because the graph
 > cannot prove the type.
 
+> **Links.count_gloss** (reader-facing "which N" — approved 8 Aug 2026):
+> one clause rendered UNLABELLED in the route step's count line ("↓ 1
+> advance — two teams beyond the group winners play off for this slot").
+> DECLARED, never detected: the app renders exactly what this column
+> says and never promotes prose out of notes — blank means a bare count.
+> A gloss is not a rule and must not look like one: no quotes, no label,
+> plain ink (conditions keep the labelled «rule as recorded» treatment).
+> Qualifying test, ruled 8 Aug 2026: the gloss names WHO the count
+> selects or changes the count's arithmetic; format, venue, process
+> status and audit narration stay in eligibility_note. Cap:
+> INLINE_RULE_MAX (134, src/lib/thresholds.ts, shared with the app's
+> inline-rule display) — hygiene/count-gloss-length WARNs above it.
+
 > **start_date / end_date** — always the competition's *true* start and end,
 > from the official schedule, even when earlier rounds' fixtures aren't
 > captured in Fixtures. The start of the captured segment is never stored: it

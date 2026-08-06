@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
 import { teamKey } from "./src/lib/normalise.ts";
-import { computeThresholds, derivePoolExclusions } from "./src/lib/thresholds.ts";
+import { computeThresholds, derivePoolExclusions, INLINE_RULE_MAX } from "./src/lib/thresholds.ts";
 import { deriveQualification } from "./src/lib/qualified.ts";
 import { buildPlacementContext, placementVerdict } from "./src/lib/placement.ts";
 
@@ -510,14 +510,14 @@ export function recordedRule(edge) {
   return { text: parts.join(" "), kind };
 }
 
-// Inline-or-fold threshold for a recorded rule, ONE number: 134
-// characters — the length of the longest signpost sentence this replaced
-// ("A route condition applies on this step: … — the exact rule is in the
-// Sheet text."). At or under it, showing the rule can never cost more
-// space than pointing at it did. Over it, the rule opens IN PLACE on the
-// step it governs. No string may tell the reader to go and find
-// something.
-export const INLINE_RULE_MAX = 134;
+// Inline-or-fold threshold for a recorded rule: INLINE_RULE_MAX (134),
+// now defined in src/lib/thresholds.ts and imported above — shared with
+// the validator's hygiene/count-gloss-length cap so the two cannot
+// drift. At or under it, showing the rule can never cost more space
+// than the signpost sentence it replaced. Over it, the rule opens IN
+// PLACE on the step it governs. No string may tell the reader to go and
+// find something.
+export { INLINE_RULE_MAX };
 
 export function conditionState(edge, hostName) {
   const t = edge?.condition_trigger == null ? null : String(edge.condition_trigger).trim().toUpperCase() || null;
@@ -1072,6 +1072,12 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           <div style={{ minWidth: 0, paddingLeft: 1 }}>
             <div style={{ font: `500 11px/1.3 ${MONO}`, color: l.entry_condition ? C.open : l.confidence === "AMBIGUOUS" ? C.fault : C.brass }}>
               ↓ {prefix}{n}
+              {/* Links.count_gloss — DECLARED in the sheet, never detected:
+                  what the count means, part of the count line itself. Plain
+                  ink, unlabelled, unquoted — it is not a rule, so it must
+                  not look like one. Blank → bare count, exactly as before. */}
+              {l.count_gloss ? <span style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.ink,
+                letterSpacing: 0, textTransform: "none" }}> — {String(l.count_gloss)}</span> : null}
             </div>
             {/* Derived sentences that belong to THIS edge — the ranking
                 mechanism on its cut-carrying edge, conditions on their
