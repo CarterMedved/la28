@@ -117,12 +117,11 @@ console.log("design cards derive from the real data:");
   // (berths edge) asserts TODAY only because its app-addressed note
   // contains "should" — the accepted replacement flips it quiet with no
   // code change. Both states pinned.
-  check("route condition sits on bkb-033, its own edge",
-    /route condition applies on this step: how many teams advance/i.test(notesOf(m, "bkb-033")), notesOf(m, "bkb-033"));
-  check("recipient condition sits on bkb-028 (its current note asserts via 'should')",
+  check("bkb-033's category line is GONE — its 59-char rule renders inline and says it concretely",
+    !notesOf(m, "bkb-033"), notesOf(m, "bkb-033"));
+  check("bkb-028 keeps the typed line (its 265-char rule is behind a control — the reader must see something)",
     /recipient condition applies on this step: who receives/i.test(notesOf(m, "bkb-028")), notesOf(m, "bkb-028"));
-  check("the two types never share an edge or a label",
-    !/recipient/i.test(notesOf(m, "bkb-033")) && !/route condition/i.test(notesOf(m, "bkb-028")));
+  check("no route-condition label ever lands on the berths edge", !/route condition/i.test(notesOf(m, "bkb-028")));
 }
 {
   // The accepted bkb-028 replacement (pasted 4 Aug, live) goes QUIET:
@@ -135,7 +134,10 @@ console.log("design cards derive from the real data:");
   const m = model(f, raw => { const l = link(raw, "bkb-028"); l.eligibility_note = REPLACEMENT; });
   check("after the accepted paste, bkb-028 goes quiet (no note on its edge)",
     !notesOf(m, "bkb-028"), notesOf(m, "bkb-028"));
-  check("route condition on bkb-033 survives the paste", /route condition/i.test(notesOf(m, "bkb-033")));
+  check("bkb-033's inline rule survives the paste (the paste silences only bkb-028)",
+    (() => { const { data } = ctx(raw => { const l = link(raw, "bkb-028"); l.eligibility_note = REPLACEMENT; });
+      const r = recordedRule(data.links.find(x => x.link_id === "bkb-033"));
+      return r && r.text.length <= INLINE_RULE_MAX; })());
   check("the replaced note is still quoted verbatim",
     m.quotes.some(q => q.id === "bkb-028" && /NET ten new places/.test(q.text)));
 }
@@ -183,8 +185,12 @@ console.log("cricket routes: named lines, settled route suppressed:");
   // The mechanism sentence lives on the cut-carrying edge, not in a section.
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage]).find(x => x[0] === comp);
   const m = model(f);
-  check("ranking mechanism renders on cri-020, the edge carrying the live cut",
-    /isn't settled.*highest-ranked team not already qualified/i.test(notesOf(m, "cri-020")), notesOf(m, "cri-020"));
+  check("ranking mechanism sits on the CUT-LINE (with the standings), not on the edge",
+    /isn't settled.*highest-ranked team not already qualified/i.test(m.cutNotes["icc-w-host-fallback"] || "") &&
+    !notesOf(m, "cri-020"), notesOf(m, "cri-020") || m.cutNotes["icc-w-host-fallback"]);
+  check("cri-020's own display is its ENTRY condition, labelled as such (kind: entry, 126 chars, inline)",
+    (() => { const { data } = ctx(); const l = data.links.find(x => x.link_id === "cri-020");
+      const r = recordedRule(l); return r && r.kind === "entry" && r.text.length <= INLINE_RULE_MAX; })());
 }
 {
   const f = ds.fixtures.map(x => [x.competition_id, x.date, x.team1, x.team2, x.stage])
@@ -202,7 +208,7 @@ console.log("rules live on their steps; nothing signposts:");
 {
   const { data } = ctx();
   const L = (id) => (data.links || []).find(l => l.link_id === id);
-  const len = (id) => (recordedRule(L(id)) || "").length;
+  const len = (id) => (recordedRule(L(id))?.text || "").length;
   check("threshold = 134, the longest signpost sentence it replaced", INLINE_RULE_MAX === 134);
   check("bkb-032/033/034/035 inline (99/59/59/59 chars, all ≤ threshold)",
     ["bkb-032", "bkb-033", "bkb-034", "bkb-035"].every(id => len(id) > 0 && len(id) <= INLINE_RULE_MAX));

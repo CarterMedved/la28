@@ -351,7 +351,7 @@ export function buildIndex(DATA) {
         const unsat = (blocked[rid] || []).filter(b => b.reason === "unsatisfiable");
         if (unsat.length)
           return { level: "unknown", rid, cut: unsat[0].cut,
-            why: `${unsat.map(b => b.cut.name).join("; ")}: blocked by declaration (computability=UNSATISFIABLE) — no reading of the allocation seats its result, so no top-${unsat[0].cut.n ?? "N"} is computed or displayed. Resolves when the reading is settled and the marker cleared.` };
+            why: `${unsat.map(b => b.cut.name).join("; ")}: blocked by a recorded declaration — no reading of the allocation rule seats its own result, so no top-${unsat[0].cut.n ?? "N"} is computed or displayed. Resolves when the source document settles the reading and the block is cleared.` };
         const basis = (blocked[rid] || []).filter(b => b.reason === "basis");
         if (basis.length)
           return { level: "unknown", rid,
@@ -495,13 +495,19 @@ const CONDITION_ASSERTED = /\bshould\b|\bunless\b|\bconditional\b|passes to|\bwh
 // needs to resolve the condition: the entry condition whenever one
 // exists, plus whichever other field ASSERTS the condition. Null for
 // edges with no asserting prose (descriptive notes stay in the audit
-// layer only — they are not rules).
+// layer only — they are not rules). `kind` labels what the text IS —
+// "entry" (a condition on the route being live at all) vs "rule" —
+// because an entry condition and a cut-line mechanism on the same step
+// are different rules, and stacking them unlabelled implies one explains
+// the other (the cri-020 lesson).
 export function recordedRule(edge) {
   const parts = [];
   if (edge?.entry_condition) parts.push(String(edge.entry_condition));
   if (edge?.eligibility_note && CONDITION_ASSERTED.test(String(edge.eligibility_note))) parts.push(String(edge.eligibility_note));
   if (!parts.length && edge?.criterion && CONDITION_ASSERTED.test(String(edge.criterion))) parts.push(String(edge.criterion));
-  return parts.length ? parts.join(" ") : null;
+  if (!parts.length) return null;
+  const kind = edge?.entry_condition && parts.length === 1 ? "entry" : "rule";
+  return { text: parts.join(" "), kind };
 }
 
 // Inline-or-fold threshold for a recorded rule, ONE number: 134
@@ -628,6 +634,17 @@ export function fixtureCardModel(idx, DATA, f) {
   // checked 6 Aug 2026 — and conditions sit on their own steps).
   const edgeNotes = {};
   const note = (id, text) => (edgeNotes[id] ??= []).push(text);
+  // Cut-line mechanisms, keyed by cut_line_id: they describe the LINE
+  // (rendered with the standings read against it), not the edge — an
+  // edge can also carry its own entry condition, a different rule.
+  const cutNotes = {};
+  // A typed category line renders ONLY where the recorded rule is behind
+  // a control (or absent): where the rule shows inline it says everything
+  // the category line does, concretely, so the category line goes.
+  const ruleHidden = (edge) => {
+    const r = recordedRule(edge);
+    return !r || r.text.length > INLINE_RULE_MAX;
+  };
   const quotes = [];
   const qSeen = new Set();
   const pushQuote = (id, field, text) => {
@@ -662,14 +679,13 @@ export function fixtureCardModel(idx, DATA, f) {
         ...contending.slice(1).map(x => `${x.team} are also in contention, ${x.gapRating} rating points from the line.`),
       ];
       rankSentence = [main, ...rest].join(" ");
-      // The ranking MECHANISM belongs on the edge that carries the cut it
-      // describes; falls back to the rating-points edge (never needed
-      // today — every cut-line is carried by a link).
-      const cutEdge = (DATA.links || []).find(l => l.cut_line_id === p.cut.cut_line_id)
-        ?? (idx.outbound[compId] || []).find(l => l.relationship === "RANKING_POINTS");
-      if (cutEdge) note(cutEdge.link_id, p.holder
+      // The ranking MECHANISM describes the cut-line, so it renders WITH
+      // the line — above the standings read against it — not as an edge
+      // note (the edge may carry its own entry condition, a different
+      // rule; cri-020 carries both).
+      cutNotes[p.cut.cut_line_id] = p.holder
         ? `The place isn't settled: it belongs to whoever is the highest-ranked team not already qualified when the table closes. This ${noun} moves rating points, not places directly.`
-        : `Places go by ranking position when the table closes. This ${noun} moves rating points, not places directly.`);
+        : `Places go by ranking position when the table closes. This ${noun} moves rating points, not places directly.`;
       const cut = (DATA.cuts || []).find(c => c.cut_line_id === p.cut.cut_line_id);
       pushQuote(p.cut.cut_line_id, "notes", cut?.notes);
     } else if (facts.length) {
@@ -731,13 +747,13 @@ export function fixtureCardModel(idx, DATA, f) {
       : CONDITION_ASSERTED.test(String(l.eligibility_note ?? "")) ||
         CONDITION_ASSERTED.test(String(l.entry_condition ?? ""));
     for (const l of path.slice(0, -1)) {
-      if (!stepConditional(l)) continue;
+      if (!stepConditional(l) || !ruleHidden(l)) continue;
       note(l.link_id, Number(l.qualifiers) > 0
         ? `A route condition applies on this step: how many teams advance through it, or which, can change.`
         : `A condition applies on this step.`);
     }
     if (cond.kind === "structured") note(berthEdge.link_id, `The winner may not receive the berth: ${cond.clause} (structured condition).`);
-    if (cond.kind === "marker") note(berthEdge.link_id, Number(berthEdge.berths) > 0
+    if (cond.kind === "marker" && ruleHidden(berthEdge)) note(berthEdge.link_id, Number(berthEdge.berths) > 0
       ? `A recipient condition applies on this step: who receives the place${Number(berthEdge.berths) === 1 ? "" : "s"} can change.`
       : `A condition applies on this step.`);
     // Other direct routes: their conditions render on their own final
@@ -752,7 +768,7 @@ export function fixtureCardModel(idx, DATA, f) {
       otherFinals.add(last.link_id);
       const oc = conditionState(last, hostInField(idx, last.to_id));
       if (oc.kind === "structured") note(last.link_id, `The winner may not receive the berth: ${oc.clause} (structured condition).`);
-      else if (oc.kind === "marker") note(last.link_id, `A recipient condition applies on this step: who receives can change.`);
+      else if (oc.kind === "marker" && ruleHidden(last)) note(last.link_id, `A recipient condition applies on this step: who receives can change.`);
       for (const l of r) {
         pushQuote(l.link_id, "criterion", l.criterion);
         pushQuote(l.link_id, "entry_condition", l.entry_condition);
@@ -765,7 +781,7 @@ export function fixtureCardModel(idx, DATA, f) {
   const sentence = rankSentence && placeSentence ? `${rankSentence} ${placeSentence}`
     : rankSentence ?? placeSentence
     ?? `No qualification route is mapped from this competition yet.`;
-  return { sentence, edgeNotes, quotes, rankLevel, compLabel: comp?.label ?? compId, date, teams: [t1, t2], stage };
+  return { sentence, edgeNotes, cutNotes, quotes, rankLevel, compLabel: comp?.label ?? compId, date, teams: [t1, t2], stage };
 }
 
 // Is a route IN PLAY for these teams? Judged by the cut-lines its edges
@@ -924,9 +940,10 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
   // from a specific team's position rather than in the abstract.
   const cutFor = (l) => l.cut_line_id ? (DATA.cuts || []).find(c => c.cut_line_id === l.cut_line_id) : null;
 
-  function StepStanding({ link, teams }) {
+  function StepStanding({ link, teams, cutNotes = null }) {
     const c = cutFor(link);
     if (!c || !teams?.length) return null;
+    const mech = cutNotes?.[c.cut_line_id] ?? null;
     const rid = link.from_id;
     const th = (idx.thresholds[rid] || []).find(t => t.cut.cut_line_id === c.cut_line_id);
     if (!th) return null;
@@ -945,6 +962,17 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
     const edge = (idx.standBy[rid] || []).find(r => r.rank === th.atRank);
     return (
       <div style={{ marginTop: 5, display: "grid", gap: 4 }}>
+        {/* The cut-line's mechanism, labelled with the line's own name —
+            it describes the LINE the readings below are against, and is
+            a different rule from any entry condition on the edge above. */}
+        {mech && (
+          <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.ink,
+            padding: "6px 9px", background: "#14507D0C", borderLeft: `2px solid ${C.rank}`, borderRadius: "0 3px 3px 0" }}>
+            <span style={{ font: `500 9.5px/1 ${MONO}`, color: C.rank, letterSpacing: ".08em",
+              textTransform: "uppercase", display: "block", marginBottom: 3 }}>{c.name}</span>
+            {mech}
+          </div>
+        )}
         {rows.map(r => {
           if (r.already_qualified === "Y")
             return <Line key={r.team} tone="muted" text={`${r.team} has already qualified, so this step no longer applies to them.`} />;
@@ -983,26 +1011,27 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
   // A conditional step CARRIES its rule: inline when the rule is no
   // longer than the signpost it replaced (INLINE_RULE_MAX), otherwise
   // opening in place — never a pointer to somewhere the reader can't go.
-  const RecordedRule = ({ text }) => {
+  const RecordedRule = ({ rule }) => {
     const [open, setOpen] = useState(false);
-    if (text.length <= INLINE_RULE_MAX || open) return (
+    const label = rule.kind === "entry" ? "The entry condition as recorded" : "The rule as recorded";
+    if (rule.text.length <= INLINE_RULE_MAX || open) return (
       <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.ink, marginTop: 3,
         padding: "6px 9px", background: "#9A6F300E", borderLeft: `2px solid ${C.brass}`, borderRadius: "0 3px 3px 0" }}>
         <span style={{ font: `500 9.5px/1 ${MONO}`, color: C.brass, letterSpacing: ".08em",
-          textTransform: "uppercase", display: "block", marginBottom: 3 }}>The rule as recorded</span>
-        «{text}»
+          textTransform: "uppercase", display: "block", marginBottom: 3 }}>{label}</span>
+        «{rule.text}»
       </div>
     );
     return (
       <div style={{ marginTop: 3 }}>
         <span role="button" tabIndex={0} onClick={() => setOpen(true)}
           onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(true); } }}
-          style={{ color: C.brass, cursor: "pointer", font: `500 11px/1.5 ${MONO}` }}>the rule as recorded ▸</span>
+          style={{ color: C.brass, cursor: "pointer", font: `500 11px/1.5 ${MONO}` }}>{label.toLowerCase()} ▸</span>
       </div>
     );
   };
 
-  function PathwayTrace({ compId, teams, quotes = true, notes = null }) {
+  function PathwayTrace({ compId, teams, quotes = true, notes = null, cutNotes = null }) {
     const routes = routesToBerth(compId).sort((a, b) => a.length - b.length);
     const here = idx.node[compId];
     // Out-of-contention routes collapse to their reason; one click (or
@@ -1022,7 +1051,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
         </div>
       </div>
     );
-    const Step = ({ l, teams, quotes = true, notes = null }) => {
+    const Step = ({ l, teams, quotes = true, notes = null, cutNotes = null }) => {
       const n = l.relationship === "REALLOCATION" ? "reallocated place"
               : l.relationship === "RANKING_CONTINGENCY" ? "replacements only"
               : l.berths ? `${l.berths} berth${l.berths === 1 ? "" : "s"}`
@@ -1056,7 +1085,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
             {/* Every condition is reachable from the step it governs. When
                 the full quote blocks are off (fixture cards), the asserting
                 prose renders here — inline or opening in place. */}
-            {!quotes && recordedRule(l) && <RecordedRule text={recordedRule(l)} />}
+            {!quotes && recordedRule(l) && <RecordedRule rule={recordedRule(l)} />}
             {quotes && l.entry_condition && (
               <div style={{ font: `400 11.5px/1.5 ${SANS}`, color: C.open, marginTop: 3,
                 padding: "6px 9px", background: "#A8761A0E", borderLeft: `2px solid ${C.open}`, borderRadius: "0 3px 3px 0" }}>
@@ -1071,7 +1100,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                 {l.eligibility_note}
               </div>
             )}
-            <StepStanding link={l} teams={teams} />
+            <StepStanding link={l} teams={teams} cutNotes={cutNotes} />
             {quotes && l.berth_math && (
               <div style={{ marginTop: 4, padding: "6px 9px", background: "#147D5C0C",
                 borderLeft: `2px solid ${C.live}`, borderRadius: "0 3px 3px 0" }}>
@@ -1118,7 +1147,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
               const isEnd = l.to_type === "OLYMPIC_EVENT";
               return (
                 <React.Fragment key={l.link_id}>
-                  <Step l={l} teams={teams} quotes={quotes} notes={notes?.[l.link_id]} />
+                  <Step l={l} teams={teams} quotes={quotes} notes={notes?.[l.link_id]} cutNotes={cutNotes} />
                   <Node
                     label={tgt?.event_name || tgt?.label || l.to_id}
                     sub={isEnd ? `${tgt?.quota_total} team field` : tgt?.confederation && tgt.confederation !== "GLOBAL" ? tgt.confederation : (tgt?.format || "")}
@@ -1570,7 +1599,7 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                       <div style={{ font: `500 10px/1 ${MONO}`, color: C.muted, letterSpacing: ".08em",
                         textTransform: "uppercase", margin: "2px 0 6px 1px" }}>The route</div>
                       <div style={{ marginBottom: 8 }}>
-                        <PathwayTrace compId={f[0]} teams={[f[2], f[3]]} quotes={false} notes={m.edgeNotes} />
+                        <PathwayTrace compId={f[0]} teams={[f[2], f[3]]} quotes={false} notes={m.edgeNotes} cutNotes={m.cutNotes} />
                       </div>
                       {/* Layer 4 — sheet text, verbatim, adjacent to the derivation.
                           This is the fbl-005 protection; evidence mode expands it. */}
@@ -1717,9 +1746,9 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
                         </>}
                         {byUnsat.length > 0 && <>
                           {byDepth.length + byBasis.length > 0 ? " " : ""}{byUnsat.map(b => b.cut.name).join("; ")}: blocked
-                          by declaration (computability=UNSATISFIABLE) — no reading of the allocation seats its result, so
-                          no threshold is shown. The evidence is on the cut's notes; resolving the reading and clearing
-                          the marker is what unblocks it.
+                          by a recorded declaration — no reading of the allocation rule seats its own result, so no
+                          threshold is shown. The evidence is on the cut's notes; resolving the reading and clearing
+                          the block is what unblocks it.
                         </>}
                       </div>
                     );
