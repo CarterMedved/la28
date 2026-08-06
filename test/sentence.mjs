@@ -16,6 +16,7 @@
 import { build } from "esbuild";
 import { pathToFileURL } from "node:url";
 import { loadWorkbook, RAW } from "../src/lib/load.ts";
+import { teamLineFacts } from "../src/lib/thresholds.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 await build({
@@ -224,6 +225,47 @@ console.log("rules live on their steps; nothing signposts:");
   check("no design card carries a signpost string, in sentence or on any edge",
     cards.every(m => !SIGNPOST.test(m.sentence) && !SIGNPOST.test(allNotes(m))),
     cards.map(m => m.sentence).join(" § "));
+}
+
+
+// ---- teamLineFacts: every rule measured by ITS OWN logic (the 9 Aug audit) ----
+console.log("per-rule measurement (the Bangladesh bug and its class):");
+{
+  const men = ds.standings.filter(x => x.ranking_id === "icc-mens-t20i-team-ranking");
+  const cut = (id) => ds.cuts.find(c => c.cut_line_id === id);
+  const row = (t) => men.find(x => x.team === t);
+  const CONT = cut("icc-m-continental-4"), FALL = cut("icc-m-host-fallback"), FOGQT = cut("icc-m-fogqt-8"), TOP15 = cut("icc-m-host-top15");
+  {
+    const f = teamLineFacts(CONT, 5, men, row("Bangladesh"));
+    check("TOP_PER_NAMED_CONTINENT: Bangladesh reads against ASIA's leader — India, 50 points, 2 Asian teams above",
+      f.state === "chasing" && f.edgeTeam === "India" && f.gapRating === 50 && f.gapPlaces === 2, JSON.stringify(f));
+    check("…never against South Africa (the cross-continent bug)", f.edgeTeam !== "South Africa");
+    check("…and the line reads SETTLED: the leader is recorded already qualified", f.settled === true);
+  }
+  check("continental: an Americas team is ineligible for this route",
+    teamLineFacts(CONT, 5, men, row("West Indies")).state === "ineligible");
+  {
+    const f = teamLineFacts(FALL, 4, men, row("Bangladesh"), { awardsPlaces: true });
+    check("NEXT_N (place cut): Bangladesh chases NZ by 22 points, 2 ELIGIBLE-pool places (WI not on the ladder)",
+      f.state === "chasing" && f.edgeTeam === "New Zealand" && f.gapRating === 22 && f.gapPlaces === 2, JSON.stringify(f));
+  }
+  check("place cut: West Indies cannot chase the host-fallback (counts toward fields, cannot hold a place)",
+    teamLineFacts(FALL, 4, men, row("West Indies"), { awardsPlaces: true }).state === "ineligible");
+  {
+    const f = teamLineFacts(FOGQT, 12, men, row("West Indies"), { awardsPlaces: false });
+    check("field cut: West Indies IS in the FOGQT pool (the counts_in_field override applies to fields)",
+      f.state === "inside" || f.state === "chasing", JSON.stringify(f));
+  }
+  check("already-qualified reads settled everywhere (South Africa)",
+    teamLineFacts(FALL, 4, men, row("South Africa"), { awardsPlaces: true }).state === "already_qualified");
+  {
+    const f = teamLineFacts(TOP15, 15, men, row("India"));
+    check("RANK_AT_OR_ABOVE unchanged semantics: rank vs the line", f.state === "already_qualified" || f.state === "inside");
+  }
+  const women = ds.standings.filter(x => x.ranking_id === "icc-womens-t20i-team-ranking");
+  const wf = teamLineFacts(ds.cuts.find(c => c.cut_line_id === "icc-w-host-fallback"), 4, women, women.find(x => x.team === "Sri Lanka"));
+  check("PROVISIONAL_HOLDER regression pin: Sri Lanka chasing the holder by 11 points",
+    wf.state === "chasing" && wf.gapRating === 11, JSON.stringify(wf));
 }
 
 // ---- the marker's edge is always in a rendered route ----

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
 import { teamKey } from "./src/lib/normalise.ts";
-import { computeThresholds, derivePoolExclusions, INLINE_RULE_MAX } from "./src/lib/thresholds.ts";
+import { computeThresholds, derivePoolExclusions, teamLineFacts, INLINE_RULE_MAX } from "./src/lib/thresholds.ts";
 import { deriveQualification } from "./src/lib/qualified.ts";
 import { buildPlacementContext, placementVerdict } from "./src/lib/placement.ts";
 
@@ -424,7 +424,7 @@ export function buildIndex(DATA) {
       (DATA.fx || []).map(f => ({ competition_id: f[0], stage: f[4] })));
     const placement = (compId, stage) => placementVerdict(compId, stage, pctx);
 
-    const idx = { node, inbound, outbound, hops, fxCount, fxByComp, berthSum, rankById, windowState, route, standBy, cutsBy, thresholds, blocked, capturedDepth, teamKey, fixtureVerdict, placement };
+    const idx = { node, inbound, outbound, hops, fxCount, fxByComp, berthSum, rankById, windowState, route, standBy, cutsBy, thresholds, blocked, capturedDepth, poolExclusions, teamKey, fixtureVerdict, placement };
     idx.cardModel = f => fixtureCardModel(idx, DATA, f);
     return idx;
   }
@@ -591,11 +591,20 @@ function rankTeamFacts(idx, rid, team) {
       const only = String(t.appliesTo).split(",").map(x => idx.teamKey(x.trim()));
       if (!only.includes(idx.teamKey(r.team))) continue;
     }
-    const edge = rows.find(x => x.rank === t.atRank);
-    const gapRating = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
-    const gapPlaces = Math.abs(r.rank - t.atRank);
-    const cand = { cut: t.cut, atRank: t.atRank, edgeTeam: edge?.team ?? null, gapRating, gapPlaces,
-      holder: t.cut.rule === "PROVISIONAL_HOLDER" ? edge?.team ?? null : null, inside: r.rank <= t.atRank };
+    // Measured by the RULE'S OWN LOGIC (teamLineFacts) — a continental
+    // challenger chases its own continent's leader, pool gaps count pool
+    // positions, and a team that cannot take this cut's place is not a
+    // candidate. A settled continental line (leader recorded already
+    // qualified) is skipped: the data says no contest exists there, and a
+    // "close" gap to it must not read as a live chase.
+    const f = teamLineFacts(t.cut, t.atRank, rows, r,
+      { exclusions: idx.poolExclusions?.[t.cut.cut_line_id], keyOf: idx.teamKey,
+        awardsPlaces: idx.node[String(t.cut.leads_to)]?.event_name != null });
+    if (!f || f.state === "ineligible" || f.settled) continue;
+    const cand = { cut: t.cut, atRank: t.atRank, edgeTeam: f.edgeTeam,
+      gapRating: f.gapRating, gapPlaces: f.gapPlaces ?? 0,
+      holder: t.cut.rule === "PROVISIONAL_HOLDER" ? f.edgeTeam : null,
+      inside: f.state === "inside" || f.state === "leader" };
     if (!nearest || (cand.gapRating ?? 1e9) < (nearest.gapRating ?? 1e9)) nearest = cand;
   }
   if (!nearest) return { team: r.team, state: "noline" };
@@ -803,7 +812,6 @@ export function routeMateriality(idx, DATA, route, teams) {
     const th = (idx.thresholds[rid] || []).find(t => t.cut.cut_line_id === l.cut_line_id);
     if (!th) continue;
     const rows = idx.standBy[rid] || [];
-    const edge = rows.find(x => x.rank === th.atRank);
     for (const team of (teams || []).filter(Boolean)) {
       const r = rows.find(x => idx.teamKey(x.team) === idx.teamKey(team));
       if (!r) continue;
@@ -812,14 +820,22 @@ export function routeMateriality(idx, DATA, route, teams) {
         if (!only.includes(idx.teamKey(r.team))) continue;
       }
       sawTeam = true;
-      if (r.provisional === "Y") { anyLive = true; continue; }
-      if (r.already_qualified === "Y") { readings.push(`${r.team} has already qualified`); continue; }
-      const pts = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
-      const places = Math.abs(r.rank - th.atRank);
+      // Measured by the rule's own logic (teamLineFacts) — the same
+      // dispatch the standings display uses, so suppression and display
+      // can never disagree about what a team's distance means.
+      const f = teamLineFacts(th.cut, th.atRank, rows, r,
+        { exclusions: idx.poolExclusions?.[th.cut.cut_line_id], keyOf: idx.teamKey,
+            awardsPlaces: idx.node[String(th.cut.leads_to)]?.event_name != null });
+      if (!f) continue;
+      if (f.state === "holds") { anyLive = true; continue; }
+      if (f.state === "already_qualified") { readings.push(`${r.team} has already qualified`); continue; }
+      if (f.state === "ineligible") { readings.push(`${r.team} cannot take this place (${f.reason})`); continue; }
+      if (f.settled) { readings.push(`${r.continent}'s place is ${f.edgeTeam}'s, recorded as already qualified`); continue; }
+      if (f.state === "leader") { anyLive = true; continue; }
+      const pts = f.gapRating, places = f.gapPlaces ?? 0;
       const contending = pts != null ? pts <= CONTENTION.CONTENDING_MAX_RATING : places <= CONTENTION.AT_STAKE_MAX_PLACES;
       if (contending) { anyLive = true; continue; }
-      const inside = r.rank <= th.atRank;
-      readings.push(`${r.team} is ${pts != null ? `${pts} rating points` : `${places} places`} ${inside ? "clear of" : "short of"} this line`);
+      readings.push(`${r.team} is ${pts != null ? `${pts} rating points` : `${places} places`} ${f.state === "inside" ? "clear of" : "short of"} this line`);
     }
   }
   if (anyLive || !sawTeam || !readings.length) return { inPlay: true };
@@ -974,25 +990,42 @@ function Explorer({ data, meta, problems, onReset, onLoad, busy }) {
           </div>
         )}
         {rows.map(r => {
-          if (r.already_qualified === "Y")
+          // Measured by the rule's own logic (teamLineFacts): a continental
+          // challenger reads against ITS OWN continent's leader, pool gaps
+          // count pool positions, and a team that cannot take this place
+          // says so instead of pretending to chase it.
+          const f = teamLineFacts(th.cut, th.atRank, idx.standBy[rid] || [], r,
+            { exclusions: idx.poolExclusions?.[th.cut.cut_line_id], keyOf: idx.teamKey,
+            awardsPlaces: idx.node[String(th.cut.leads_to)]?.event_name != null });
+          if (!f) return null;
+          if (f.state === "already_qualified")
             return <Line key={r.team} tone="muted" text={`${r.team} has already qualified, so this step no longer applies to them.`} />;
-          const inside = r.rank <= th.atRank;
-          const places = Math.abs(r.rank - th.atRank);
-          const pts = edge && r.rating != null && edge.rating != null ? Math.abs(r.rating - edge.rating) : null;
-          if (r.provisional === "Y")
+          if (f.state === "holds")
             return <Line key={r.team} tone="open" text={`${r.team} currently HOLDS this place (rank ${r.rank}) but it is not settled until ${c.deadline}.`} />;
-          // Tone is governed by the CONTENTION band, both directions:
-          // red is for a live chase, not for any team below any line.
+          if (f.state === "ineligible")
+            return <Line key={r.team} tone="muted" text={`${r.team} cannot take this place — ${f.reason}.`} />;
+          const continental = th.cut.rule === "TOP_PER_NAMED_CONTINENT";
+          const pts = f.gapRating, places = f.gapPlaces ?? 0;
           const inBand = pts != null ? pts <= CONTENTION.CONTENDING_MAX_RATING : places <= CONTENTION.AT_STAKE_MAX_PLACES;
-          if (inside && !inBand)
-            return <Line key={r.team} tone="live" text={`${r.team} is ${r.rank}${nth(r.rank)} — comfortably inside. The cut is at rank ${th.atRank}, ${places} places below, so this step is effectively secure for them${pts != null ? ` (${pts} rating points of cushion)` : ""}.`} />;
-          if (inside)
-            return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — inside, but only ${places === 0 ? "on" : `${places} place${places === 1 ? "" : "s"} above`} the cut at rank ${th.atRank}${pts != null ? `, a margin of ${pts} rating points` : ""}. Contested.`} />;
-          // Red is for data faults only. A team inside the band is the
-          // contest worth watching — attention (brass), not alarm, and
-          // "chasing", not "OUTSIDE": say what is true and by how much.
+          if (continental) {
+            const cont = r.continent ?? "its continent";
+            if (f.state === "leader")
+              return <Line key={r.team} tone="live" text={`${r.team} leads ${cont} — this place is theirs on today's table.`} />;
+            // A settled continental line: the leader is RECORDED as already
+            // qualified, so the data treats the place as settled — an
+            // honest reading says so; it never implies a live chase.
+            if (f.settled)
+              return <Line key={r.team} tone="muted" text={`${cont}'s place is ${f.edgeTeam}'s, recorded as already qualified — the data treats it as settled. ${r.team} is ${pts != null ? `${pts} rating points` : `${places} team${places === 1 ? "" : "s"}`} behind${places ? `, with ${places} ${cont} team${places === 1 ? "" : "s"} above them` : ""}; nothing changes while the holder is recorded settled.`} />;
+            return <Line key={r.team} tone={inBand ? "open" : "muted"} text={`${cont}'s place is ${f.edgeTeam}'s. ${r.team} is ${pts != null ? `${pts} rating points` : `${places} team${places === 1 ? "" : "s"}`} behind, with ${places} ${cont} team${places === 1 ? "" : "s"} above them${inBand ? "" : " — beyond the contention band"}.`} />;
+          }
+          // Tone is governed by the CONTENTION band, both directions:
+          // red is for data faults, never for sporting distance.
+          if (f.state === "inside" && !inBand)
+            return <Line key={r.team} tone="live" text={`${r.team} is ${r.rank}${nth(r.rank)} — comfortably inside. The cut is at rank ${th.atRank}, ${places} ${th.cut.rule === "NEXT_N_NOT_QUALIFIED" || th.cut.rule === "TOP_N_OF_POOL" ? `pool place${places === 1 ? "" : "s"}` : `place${places === 1 ? "" : "s"}`} clear, so this step is effectively secure for them${pts != null ? ` (${pts} rating points of cushion)` : ""}.`} />;
+          if (f.state === "inside")
+            return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — inside, but only ${places === 0 ? "on the line" : `${places} place${places === 1 ? "" : "s"} above the line`}${pts != null ? `, a margin of ${pts} rating points` : ""}. Contested.`} />;
           if (inBand)
-            return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — chasing this place: ${places} place${places === 1 ? "" : "s"}${pts != null ? ` and ${pts} rating points` : ""} behind ${edge?.team ?? `rank ${th.atRank}`}${edge?.team ? ` at rank ${th.atRank}` : ""}.`} />;
+            return <Line key={r.team} tone="open" text={`${r.team} is ${r.rank}${nth(r.rank)} — chasing this place: ${places} place${places === 1 ? "" : "s"}${pts != null ? ` and ${pts} rating points` : ""} behind ${f.edgeTeam ?? `rank ${th.atRank}`}.`} />;
           return <Line key={r.team} tone="muted" text={`${r.team} is ${r.rank}${nth(r.rank)} — ${pts != null ? `${pts} rating points` : `${places} places`} from this line, beyond the contention band. Not in play for them today.`} />;
         })}
       </div>

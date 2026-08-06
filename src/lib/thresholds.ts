@@ -180,3 +180,106 @@ export function computeThresholds(
   });
   return { thresholds, blocked, capturedDepth };
 }
+
+/**
+ * Per-team reading against ONE cut-line, measured by THE RULE'S OWN LOGIC
+ * — the 9 Aug 2026 audit fix. The scalar threshold above answers "where
+ * does the line sit on the table"; it must NOT be used to measure a
+ * team's distance, because two rules break that arithmetic:
+ *  - TOP_PER_NAMED_CONTINENT: a challenger is measured within its OWN
+ *    continent (Bangladesh chases India's Asia place, 50 points, past
+ *    Pakistan — not South Africa's Africa place at 19), and a team from
+ *    an unnamed continent, or ineligible, cannot take the place at all.
+ *  - The pooled rules: a team outside the pool (ineligible, excluded,
+ *    already qualified) is not "N places from the line" — it is not in
+ *    the contest, and place-gaps count POOL positions, not table rows.
+ * States: "ineligible" (cannot take this cut's place — reason attached),
+ * "already_qualified" (settled — nothing here contests them), "holds"
+ * (provisional holder of this line), "leader" (tops its continent),
+ * "inside"/"chasing" with gaps. `settled` marks a continental line whose
+ * leader is recorded already_qualified: the data treats the place as
+ * settled, so a challenger's reading must say so rather than imply a
+ * live chase.
+ */
+export interface TeamLineReading {
+  state: "ineligible" | "already_qualified" | "holds" | "leader" | "inside" | "chasing";
+  reason?: string;
+  edgeTeam: string | null; edgeRank: number | null;
+  gapRating: number | null; gapPlaces: number | null;
+  settled?: boolean;
+}
+export function teamLineFacts(
+  cut: CutLine, atRank: number, rows: StandingRow[], r: StandingRow,
+  opts?: { exclusions?: Set<string>; keyOf?: (t: unknown) => string; awardsPlaces?: boolean },
+): TeamLineReading | null {
+  const sorted = rows.slice().sort((a, b) => a.rank - b.rank);
+  const gaps = (edge: StandingRow | undefined | null) => ({
+    edgeTeam: edge?.team ?? null, edgeRank: edge?.rank ?? null,
+    gapRating: edge && r.rating != null && edge.rating != null ? Math.abs(Number(r.rating) - Number(edge.rating)) : null,
+  });
+
+  if (cut.rule === "TOP_PER_NAMED_CONTINENT") {
+    // Continental route uses PLAIN olympic_eligible — counts_in_field never
+    // counts toward a continental allocation (README, counted order).
+    const conts = continentsOf(cut);
+    if (r.olympic_eligible !== "Y")
+      return { state: "ineligible", reason: "not eligible to hold an Olympic place", ...gaps(null), gapPlaces: null };
+    if (!conts.includes(String(r.continent ?? "")))
+      return { state: "ineligible", reason: `${r.continent ?? "its region"} is not among this route's continents`, ...gaps(null), gapPlaces: null };
+    const mine = sorted.filter(x => x.continent === r.continent && x.olympic_eligible === "Y");
+    const leader = mine[0];
+    const settled = leader?.already_qualified === "Y";
+    if (r.already_qualified === "Y") return { state: "already_qualified", ...gaps(null), gapPlaces: null, settled };
+    if (leader && leader.rank === r.rank) return { state: "leader", ...gaps(leader), gapPlaces: 0, settled };
+    const above = mine.filter(x => x.rank < r.rank).length;
+    return { state: "chasing", ...gaps(leader), gapPlaces: above, settled };
+  }
+
+  if (r.already_qualified === "Y") return { state: "already_qualified", ...gaps(null), gapPlaces: null };
+
+  if (cut.rule === "PROVISIONAL_HOLDER") {
+    if (r.provisional === "Y" && r.rank === atRank) return { state: "holds", ...gaps(null), gapPlaces: null };
+    // Challengers must be able to HOLD the place: plain eligibility.
+    if (r.olympic_eligible !== "Y")
+      return { state: "ineligible", reason: "not eligible to hold an Olympic place", ...gaps(null), gapPlaces: null };
+    const holder = sorted.find(x => x.rank === atRank) ?? null;
+    return { state: r.rank <= atRank ? "inside" : "chasing", ...gaps(holder), gapPlaces: Math.abs(r.rank - atRank) };
+  }
+
+  if (cut.rule === "NEXT_N_NOT_QUALIFIED" || cut.rule === "TOP_N_OF_POOL") {
+    const excl = cut.rule === "TOP_N_OF_POOL" ? opts?.exclusions : undefined;
+    if (cut.rule === "TOP_N_OF_POOL" && !excl) return null;   // no basis → no reading, never a guess
+    // counts_in_field is a FIELD override (README, counted order): it puts
+    // a team that cannot hold an Olympic place into a tournament field. A
+    // cut that leads to an OLYMPIC EVENT awards places, so there the
+    // ladder is eligible nations only — West Indies is 14 points off the
+    // men's host-fallback line and must never read as chasing it. The
+    // caller derives awardsPlaces from the cut's leads_to.
+    const placeCut = opts?.awardsPlaces === true;
+    if (placeCut && r.olympic_eligible !== "Y")
+      return { state: "ineligible", reason: "counts toward tournament fields but cannot hold an Olympic place", edgeTeam: null, edgeRank: null, gapRating: null, gapPlaces: null };
+    const pool = sorted.filter(x =>
+      (x.olympic_eligible === "Y" || (!placeCut && x.counts_in_field === "Y")) &&
+      x.already_qualified !== "Y" && x.provisional !== "Y" &&
+      !(excl && opts?.keyOf && excl.has(opts.keyOf(x.team))));
+    const i = pool.findIndex(x => x.rank === r.rank);
+    if (i < 0) {
+      const why = r.provisional === "Y" ? "holds a place above this pool"
+        : excl && opts?.keyOf && excl.has(opts.keyOf(r.team)) ? "not in this pool (tournament-route entrant)"
+        : "not eligible to hold an Olympic place";
+      return { state: "ineligible", reason: why, ...gaps(null), gapPlaces: null };
+    }
+    const off = Number(cut.offset) || 0;
+    const edgeIdx = off + Number(cut.n) - 1;
+    const edge = pool[edgeIdx] ?? null;
+    // Place-gaps in POOL positions — the rule's own ladder, not table rows.
+    return { state: i <= edgeIdx ? "inside" : "chasing", ...gaps(edge), gapPlaces: Math.abs(i - edgeIdx) };
+  }
+
+  if (cut.rule === "RANK_AT_OR_ABOVE") {
+    const edge = sorted.find(x => x.rank === atRank) ?? null;
+    return { state: r.rank <= atRank ? "inside" : "chasing", ...gaps(edge), gapPlaces: Math.abs(r.rank - atRank) };
+  }
+
+  return null;   // unknown rule: no reading, never a generic guess
+}
