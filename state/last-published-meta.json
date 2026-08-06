@@ -1,5 +1,5 @@
 {
-  "workbook_sha256": "7f1b057338fd1686e77838b5d4bb96f2a166be2a1cc804c6f3421fe1c8f68037",
+  "workbook_sha256": "7d29970e599b6e690a9e232cca9d48057482711b189bd668a7e191dff60afed3",
   "content_sha256": "46ad88cb5dd60cd467c97b4bfe12e823d954e1988dd87382f365924de6c1e860",
   "rules": {
     "state/tie": 1,
@@ -11,8 +11,8 @@
     "coverage/missing-earlier-rounds": 5,
     "coverage/pool-preview": 1
   },
-  "reference_date": "2026-08-04",
-  "generated_at": "2026-08-04T04:49:24.969Z",
-  "archive_key": "26c465a2fa17",
-  "site_shell_sha256": "201802dc351c08e0ee605e59c922440f1c2e71be9cc2aeb9acfe2369e397e0e6"
+  "reference_date": "2026-08-06",
+  "generated_at": "2026-08-06T20:55:32.429Z",
+  "archive_key": "c0673be28ca4",
+  "site_shell_sha256": "eb6d8eddeac98d6afb954b6bf951382303b773c38b09cf7c12cf1b78659063a3"
 }
